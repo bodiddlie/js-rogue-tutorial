@@ -8,6 +8,9 @@ class Engine {
 
   constructor() {
     this.display = new ROT.Display({width: Engine.WIDTH, height: Engine.HEIGHT});
+    const container = this.display.getContainer()!;
+    document.body.appendChild(container);
+    this.render();
   }
 
   render() {
@@ -17,12 +20,13 @@ class Engine {
   }
 }
 
+declare global {
+  interface Window {
+    engine: Engine
+  }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   const engine = new Engine();
-
-  const container = engine.display.getContainer()!;
-
-  document.body.appendChild(container);
-
-  engine.render();
+  window.engine = engine;
 })
