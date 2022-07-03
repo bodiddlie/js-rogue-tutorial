@@ -8,10 +8,17 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "prettier": "^2.7.1",
     "typescript": "^4.5.4",
     "vite": "^2.9.9"
   },
   "dependencies": {
     "rot-js": "^2.2.0"
+  },
+  "prettier":{
+    "trailingComma": "all",
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true
   }
 }
