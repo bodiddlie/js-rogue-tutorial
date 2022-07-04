@@ -1,6 +1,6 @@
 import * as ROT from 'rot-js';
 
-import { handleInput } from './input-handler';
+import { handleInput, MovementAction } from './input-handler';
 
 class Engine {
   public static readonly WIDTH = 80;
@@ -32,8 +32,11 @@ class Engine {
   update(event: KeyboardEvent) {
     this.display.clear();
     const action = handleInput(event);
-    this.playerX += action.dx;
-    this.playerY += action.dy;
+
+    if (action instanceof MovementAction) {
+      this.playerX += action.dx;
+      this.playerY += action.dy;
+    }
     this.render();
   }
 

@@ -1,21 +1,26 @@
 export interface Action {}
 
-export interface MovementAction extends Action {
+export class MovementAction implements Action {
   dx: number;
   dy: number;
+
+  constructor(dx: number, dy: number) {
+    this.dx = dx;
+    this.dy = dy;
+  }
 }
 
 interface MovementMap {
-  [key: string]: MovementAction;
+  [key: string]: Action;
 }
 
 const MOVE_KEYS: MovementMap = {
-  ArrowUp: { dx: 0, dy: -1 },
-  ArrowDown: { dx: 0, dy: 1 },
-  ArrowLeft: { dx: -1, dy: 0 },
-  ArrowRight: { dx: 1, dy: 0 },
+  ArrowUp: new MovementAction(0, -1),
+  ArrowDown: new MovementAction(0, 1),
+  ArrowLeft: new MovementAction(-1, 0),
+  ArrowRight: new MovementAction(1, 0),
 };
 
-export function handleInput(event: KeyboardEvent): MovementAction {
+export function handleInput(event: KeyboardEvent): Action {
   return MOVE_KEYS[event.key];
 }
