@@ -1,6 +1,6 @@
 import * as ROT from 'rot-js';
 
-import { handleInput, MovementAction } from './input-handler';
+import { handleInput } from './input-handler';
 import { Entity } from './entity';
 import { GameMap } from './game-map';
 
@@ -45,12 +45,8 @@ export class Engine {
     this.display.clear();
     const action = handleInput(event);
 
-    if (action instanceof MovementAction) {
-      const newX = this.player.x + action.dx;
-      const newY = this.player.y + action.dy;
-      if (this.gameMap.tiles[newY][newX].walkable) {
-        this.player.move(action.dx, action.dy);
-      }
+    if (action) {
+      action.perform(this, this.player);
     }
     this.render();
   }

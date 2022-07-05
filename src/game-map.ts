@@ -29,7 +29,7 @@ export class GameMap {
   }
 
   isInBounds(x: number, y: number) {
-    return 0 <= x && x <= this.width && 0 <= y && y <= this.height;
+    return 0 <= x && x < this.width && 0 <= y && y < this.height;
   }
 
   render() {
