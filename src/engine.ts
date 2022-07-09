@@ -3,6 +3,7 @@ import * as ROT from 'rot-js';
 import { handleInput } from './input-handler';
 import { Entity } from './entity';
 import { GameMap } from './game-map';
+import { generateDungeon } from './procgen';
 
 export class Engine {
   public static readonly WIDTH = 80;
@@ -28,7 +29,7 @@ export class Engine {
     const container = this.display.getContainer()!;
     document.body.appendChild(container);
 
-    this.gameMap = new GameMap(
+    this.gameMap = generateDungeon(
       Engine.MAP_WIDTH,
       Engine.MAP_HEIGHT,
       this.display,
