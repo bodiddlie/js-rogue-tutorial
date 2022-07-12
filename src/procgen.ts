@@ -1,6 +1,7 @@
 import { GameMap } from './game-map';
 import { FLOOR_TILE, WALL_TILE, Tile } from './tile-types';
 import { Display } from 'rot-js';
+import { Entity } from './entity';
 
 class RectangularRoom {
   tiles: Tile[][];
@@ -15,12 +16,6 @@ class RectangularRoom {
     this.buildRoom();
   }
 
-  public get center(): [number, number] {
-    const centerX = this.x + Math.floor(this.width / 2);
-    const centerY = this.y + Math.floor(this.height / 2);
-    return [centerX, centerY];
-  }
-
   buildRoom() {
     for (let y = 0; y < this.height; y++) {
       const row = new Array(this.width);
@@ -32,27 +27,72 @@ class RectangularRoom {
       this.tiles[y] = row;
     }
   }
+
+  get center(): [number, number] {
+    const centerX = this.x + Math.floor(this.width / 2);
+    const centerY = this.y + Math.floor(this.height / 2);
+    return [centerX, centerY];
+  }
+
+  intersects(other: RectangularRoom): boolean {
+    return (
+      this.x <= other.x + other.width &&
+      this.x + this.width >= other.x &&
+      this.y <= other.y + other.height &&
+      this.y + this.width >= other.y
+    );
+  }
 }
 
 export function generateDungeon(
-  width: number,
-  height: number,
+  mapWidth: number,
+  mapHeight: number,
+  maxRooms: number,
+  minSize: number,
+  maxSize: number,
+  player: Entity,
   display: Display,
 ): GameMap {
-  const dungeon = new GameMap(width, height, display);
+  const dungeon = new GameMap(mapWidth, mapHeight, display);
 
-  const room1 = new RectangularRoom(20, 15, 10, 15);
-  const room2 = new RectangularRoom(35, 15, 10, 15);
+  const rooms: RectangularRoom[] = [];
 
-  dungeon.addRoom(room1.x, room1.y, room1.tiles);
-  dungeon.addRoom(room2.x, room2.y, room2.tiles);
+  for (let count = 0; count < maxRooms; count++) {
+    const width = generateRandomNumber(minSize, maxSize);
+    const height = generateRandomNumber(minSize, maxSize);
 
-  for (let tile of connectRooms(room1, room2)) {
-    console.log(tile);
-    dungeon.tiles[tile[1]][tile[0]] = { ...FLOOR_TILE };
+    const x = generateRandomNumber(0, mapWidth - width - 1);
+    const y = generateRandomNumber(0, mapHeight - height - 1);
+
+    const newRoom = new RectangularRoom(x, y, width, height);
+
+    if (rooms.some((r) => r.intersects(newRoom))) {
+      continue;
+    }
+
+    dungeon.addRoom(x, y, newRoom.tiles);
+
+    rooms.push(newRoom);
+  }
+
+  const startPoint = rooms[0].center;
+  player.x = startPoint[0];
+  player.y = startPoint[1];
+
+  for (let index = 0; index < rooms.length - 1; index++) {
+    const first = rooms[index];
+    const second = rooms[index + 1];
+
+    for (let tile of connectRooms(first, second)) {
+      dungeon.tiles[tile[1]][tile[0]] = { ...FLOOR_TILE };
+    }
   }
 
   return dungeon;
+}
+
+function generateRandomNumber(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min) + min);
 }
 
 function* connectRooms(
@@ -76,18 +116,22 @@ function* connectRooms(
       if (direction !== 0) {
         current[0] += direction;
         yield current;
+      } else {
+        // we've finished in this direction so switch to vertical
+        horizontal = false;
+        yield current;
       }
-      // we've finsihed in this direction so switch to vertical
-      horizontal = false;
     } else {
       const direction = Math.sign(end[1] - current[1]);
       // if direction is 0 we have hit the destination in one direction
       if (direction !== 0) {
         current[1] += direction;
         yield current;
+      } else {
+        // we've finished in this direction so switch to horizontal
+        horizontal = true;
+        yield current;
       }
-      // we've finsihed in this direction so switch to horizontal
-      horizontal = true;
     }
   }
 }
