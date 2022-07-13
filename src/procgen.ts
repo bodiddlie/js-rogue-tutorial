@@ -106,32 +106,23 @@ function* connectRooms(
 
   // flip a coin to see if we go horizontally first or vertically
   let horizontal = Math.random() < 0.5;
+  // set our axisIndex to 0 (x axis) if horizontal or 1 (y axis) if vertical
+  let axisIndex = horizontal ? 0 : 1;
 
+  console.log(current, end);
   // we'll loop until our current is the same as the end point
   while (current[0] !== end[0] || current[1] !== end[1]) {
-    if (horizontal) {
-      // are we tunneling left or right?
-      const direction = Math.sign(end[0] - current[0]);
-      // if direction is 0 we have hit the destination in one direction
-      if (direction !== 0) {
-        current[0] += direction;
-        yield current;
-      } else {
-        // we've finished in this direction so switch to vertical
-        horizontal = false;
-        yield current;
-      }
+    //are we tunneling in the positive or negative direction?
+
+    // if direction is 0 we have hit the destination in one direction
+    const direction = Math.sign(end[axisIndex] - current[axisIndex]);
+    if (direction !== 0) {
+      current[axisIndex] += direction;
+      yield current;
     } else {
-      const direction = Math.sign(end[1] - current[1]);
-      // if direction is 0 we have hit the destination in one direction
-      if (direction !== 0) {
-        current[1] += direction;
-        yield current;
-      } else {
-        // we've finished in this direction so switch to horizontal
-        horizontal = true;
-        yield current;
-      }
+      // we've finished in this direction so switch to the other
+      axisIndex = axisIndex === 0 ? 1 : 0;
+      yield current;
     }
   }
 }
