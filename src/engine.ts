@@ -46,6 +46,7 @@ export class Engine {
       this.update(event);
     });
 
+    this.gameMap.updateFov(this.player);
     this.render();
   }
 
@@ -56,6 +57,8 @@ export class Engine {
     if (action) {
       action.perform(this, this.player);
     }
+
+    this.gameMap.updateFov(this.player);
     this.render();
   }
 
