@@ -53,7 +53,7 @@ export function generateDungeon(
   player: Entity,
   display: Display,
 ): GameMap {
-  const dungeon = new GameMap(mapWidth, mapHeight, display);
+  const dungeon = new GameMap(mapWidth, mapHeight, display, [player]);
 
   const rooms: RectangularRoom[] = [];
 

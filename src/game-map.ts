@@ -11,6 +11,7 @@ export class GameMap {
     public width: number,
     public height: number,
     public display: Display,
+    public entities: Entity[],
   ) {
     this.tiles = new Array(this.height);
     for (let y = 0; y < this.height; y++) {
@@ -82,5 +83,9 @@ export class GameMap {
         this.display.draw(x, y, char, fg, bg);
       }
     }
+
+    this.entities.forEach((e) => {
+      this.display.draw(e.x, e.y, e.char, e.fg, e.bg);
+    });
   }
 }

@@ -18,10 +18,8 @@ export class Engine {
   gameMap: GameMap;
 
   player: Entity;
-  entities: Entity[];
 
-  constructor(entities: Entity[], player: Entity) {
-    this.entities = entities;
+  constructor(player: Entity) {
     this.player = player;
 
     this.display = new ROT.Display({
@@ -64,8 +62,5 @@ export class Engine {
 
   render() {
     this.gameMap.render();
-    this.entities.forEach((e) => {
-      this.display.draw(e.x, e.y, e.char, e.fg, e.bg);
-    });
   }
 }
