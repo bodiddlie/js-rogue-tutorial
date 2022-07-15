@@ -3,6 +3,13 @@ import { FLOOR_TILE, WALL_TILE, Tile } from './tile-types';
 import { Display } from 'rot-js';
 import { Entity } from './entity';
 
+interface Bounds {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
 class RectangularRoom {
   tiles: Tile[][];
 
@@ -34,6 +41,15 @@ class RectangularRoom {
     return [centerX, centerY];
   }
 
+  get bounds(): Bounds {
+    return {
+      x1: this.x,
+      y1: this.y,
+      x2: this.x + this.width,
+      y2: this.y + this.height,
+    };
+  }
+
   intersects(other: RectangularRoom): boolean {
     return (
       this.x <= other.x + other.width &&
@@ -44,12 +60,35 @@ class RectangularRoom {
   }
 }
 
+function placeEntities(
+  room: RectangularRoom,
+  dungeon: GameMap,
+  maxMonsters: number,
+) {
+  const numberOfMonstersToAdd = generateRandomNumber(0, maxMonsters);
+
+  for (let i = 0; i < numberOfMonstersToAdd; i++) {
+    const bounds = room.bounds;
+    const x = generateRandomNumber(bounds.x1 + 1, bounds.x2 - 1);
+    const y = generateRandomNumber(bounds.y1 + 1, bounds.y2 - 1);
+
+    if (!dungeon.entities.some((e) => e.x == x && e.y == y)) {
+      if (Math.random() < 0.8) {
+        console.log(`We'll be putting an orc at (${x}, ${y})!!!`);
+      } else {
+        console.log(`We'll be putting an troll at (${x}, ${y})!!!`);
+      }
+    }
+  }
+}
+
 export function generateDungeon(
   mapWidth: number,
   mapHeight: number,
   maxRooms: number,
   minSize: number,
   maxSize: number,
+  maxMonsters: number,
   player: Entity,
   display: Display,
 ): GameMap {
@@ -72,6 +111,8 @@ export function generateDungeon(
 
     dungeon.addRoom(x, y, newRoom.tiles);
 
+    placeEntities(newRoom, dungeon, maxMonsters);
+
     rooms.push(newRoom);
   }
 
@@ -92,7 +133,7 @@ export function generateDungeon(
 }
 
 function generateRandomNumber(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min) + min);
+  return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 function* connectRooms(
@@ -109,7 +150,6 @@ function* connectRooms(
   // set our axisIndex to 0 (x axis) if horizontal or 1 (y axis) if vertical
   let axisIndex = horizontal ? 0 : 1;
 
-  console.log(current, end);
   // we'll loop until our current is the same as the end point
   while (current[0] !== end[0] || current[1] !== end[1]) {
     //are we tunneling in the positive or negative direction?
