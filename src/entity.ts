@@ -16,7 +16,7 @@ export class Entity {
 }
 
 export function spawnPlayer(x: number, y: number): Entity {
-  return new Entity(x, y, '@');
+  return new Entity(x, y, '@', '#fff', '#000', 'Player', true);
 }
 
 export function spawnOrc(x: number, y: number): Entity {
