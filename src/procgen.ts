@@ -1,7 +1,7 @@
 import { GameMap } from './game-map';
 import { FLOOR_TILE, WALL_TILE, Tile } from './tile-types';
 import { Display } from 'rot-js';
-import { Entity } from './entity';
+import { Entity, spawnOrc, spawnTroll } from './entity';
 
 interface Bounds {
   x1: number;
@@ -74,9 +74,9 @@ function placeEntities(
 
     if (!dungeon.entities.some((e) => e.x == x && e.y == y)) {
       if (Math.random() < 0.8) {
-        console.log(`We'll be putting an orc at (${x}, ${y})!!!`);
+        dungeon.entities.push(spawnOrc(x, y));
       } else {
-        console.log(`We'll be putting an troll at (${x}, ${y})!!!`);
+        dungeon.entities.push(spawnTroll(x, y));
       }
     }
   }

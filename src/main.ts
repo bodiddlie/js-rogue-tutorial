@@ -1,4 +1,4 @@
-import { Entity } from './entity';
+import { spawnPlayer } from './entity';
 import { Engine } from './engine';
 
 declare global {
@@ -8,6 +8,5 @@ declare global {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  const player = new Entity(Engine.WIDTH / 2, Engine.HEIGHT / 2, '@');
-  window.engine = new Engine(player);
+  window.engine = new Engine(spawnPlayer(Engine.WIDTH / 2, Engine.HEIGHT / 2));
 });
