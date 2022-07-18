@@ -51,10 +51,10 @@ export class Engine {
   }
 
   handleEnemyTurns() {
-    this.gameMap.nonPlayerEntities.forEach((e) => {
-      console.log(
-        `The ${e.name} wonders when it will get to take a real turn.`,
-      );
+    this.gameMap.actors.forEach((e) => {
+      if (e.isAlive) {
+        e.ai?.perform(e);
+      }
     });
   }
 

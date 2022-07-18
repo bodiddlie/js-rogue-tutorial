@@ -2,7 +2,7 @@ import * as ROT from 'rot-js';
 import type { Tile } from './tile-types';
 import { WALL_TILE } from './tile-types';
 import { Display } from 'rot-js';
-import { Entity } from './entity';
+import { Actor, Entity } from './entity';
 
 export class GameMap {
   tiles: Tile[][];
@@ -23,8 +23,10 @@ export class GameMap {
     }
   }
 
-  public get nonPlayerEntities(): Entity[] {
-    return this.entities.filter((e) => e.name !== 'Player');
+  public get actors(): Actor[] {
+    return this.entities
+      .filter((e) => e instanceof Actor)
+      .map((e) => e as Actor);
   }
 
   isInBounds(x: number, y: number) {

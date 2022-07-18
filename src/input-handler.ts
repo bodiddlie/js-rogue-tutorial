@@ -4,6 +4,10 @@ export interface Action {
   perform: (entity: Entity) => void;
 }
 
+export class WaitAction implements Action {
+  perform(_entity: Entity) {}
+}
+
 export abstract class ActionWithDirection implements Action {
   constructor(public dx: number, public dy: number) {}
 
