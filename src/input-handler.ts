@@ -8,9 +8,7 @@ export interface Action {
 export abstract class ActionWithDirection implements Action {
   constructor(public dx: number, public dy: number) {}
 
-  perform(_engine: Engine, _entity: Entity) {
-    throw new Error('Method not implemented');
-  }
+  perform(_engine: Engine, _entity: Entity) {}
 }
 
 export class MovementAction extends ActionWithDirection {
