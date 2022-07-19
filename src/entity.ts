@@ -34,7 +34,7 @@ export class Actor extends Entity {
   }
 
   public get isAlive(): boolean {
-    return !!this.ai;
+    return !!this.ai || window.engine.player === this;
   }
 }
 

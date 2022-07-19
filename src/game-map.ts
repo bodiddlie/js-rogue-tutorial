@@ -26,7 +26,8 @@ export class GameMap {
   public get actors(): Actor[] {
     return this.entities
       .filter((e) => e instanceof Actor)
-      .map((e) => e as Actor);
+      .map((e) => e as Actor)
+      .filter((a) => a.isAlive);
   }
 
   isInBounds(x: number, y: number) {
@@ -37,6 +38,10 @@ export class GameMap {
     return this.entities.find(
       (e) => e.blocksMovement && e.x === x && e.y === y,
     );
+  }
+
+  getActorAtLocation(x: number, y: number): Actor | undefined {
+    return this.actors.find((a) => a.x === x && a.y === y);
   }
 
   addRoom(x: number, y: number, roomTiles: Tile[][]) {
