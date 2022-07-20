@@ -1,6 +1,12 @@
 import { BaseAI, HostileEnemy } from './components/ai';
 import { Fighter } from './components/fighter';
 
+export enum RenderOrder {
+  Corpse,
+  Item,
+  Actor,
+}
+
 export class Entity {
   constructor(
     public x: number,
@@ -10,6 +16,7 @@ export class Entity {
     public bg: string = '#000',
     public name: string = '<Unnamed>',
     public blocksMovement: boolean = false,
+    public renderOrder: RenderOrder = RenderOrder.Corpse,
   ) {}
 
   move(dx: number, dy: number) {
@@ -29,7 +36,7 @@ export class Actor extends Entity {
     public ai: BaseAI | null,
     public fighter: Fighter,
   ) {
-    super(x, y, char, fg, bg, name, true);
+    super(x, y, char, fg, bg, name, true, RenderOrder.Actor);
     this.fighter.entity = this;
   }
 

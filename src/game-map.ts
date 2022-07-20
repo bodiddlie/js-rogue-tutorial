@@ -101,7 +101,11 @@ export class GameMap {
       }
     }
 
-    this.entities.forEach((e) => {
+    const sortedEntities = this.entities
+      .slice()
+      .sort((a, b) => a.renderOrder - b.renderOrder);
+
+    sortedEntities.forEach((e) => {
       if (this.tiles[e.y][e.x].visible) {
         this.display.draw(e.x, e.y, e.char, e.fg, e.bg);
       }
