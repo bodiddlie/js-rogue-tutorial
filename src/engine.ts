@@ -4,6 +4,7 @@ import { handleInput } from './input-handler';
 import { Actor } from './entity';
 import { GameMap } from './game-map';
 import { generateDungeon } from './procgen';
+import { renderHealthBar } from './render-functions';
 
 export class Engine {
   public static readonly WIDTH = 80;
@@ -72,10 +73,11 @@ export class Engine {
   }
 
   render() {
-    this.display.drawText(
-      1,
-      47,
-      `HP: %c{red}%b{white}${this.player.fighter.hp}/%c{green}%b{white}${this.player.fighter.maxHp}`,
+    renderHealthBar(
+      this.display,
+      this.player.fighter.hp,
+      this.player.fighter.maxHp,
+      20,
     );
     this.gameMap.render();
   }
