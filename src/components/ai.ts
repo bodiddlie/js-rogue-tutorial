@@ -41,11 +41,8 @@ export abstract class BaseAI implements Action {
 }
 
 export class HostileEnemy extends BaseAI {
-  path: [number, number][];
-
   constructor() {
     super();
-    this.path = [];
   }
 
   perform(entity: Entity) {

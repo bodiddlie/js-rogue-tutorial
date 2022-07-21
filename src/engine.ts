@@ -18,11 +18,7 @@ export class Engine {
   display: ROT.Display;
   gameMap: GameMap;
 
-  player: Actor;
-
-  constructor(player: Actor) {
-    this.player = player;
-
+  constructor(public player: Actor) {
     this.display = new ROT.Display({
       width: Engine.WIDTH,
       height: Engine.HEIGHT,
