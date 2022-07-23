@@ -56,7 +56,7 @@ export class MessageLog {
         while (words.length > 0) {
           // if current line length + word length > width: start new line
           if ((currentLine + ' ' + words[0]).length > width) {
-            lines.push(`%c{${msg.fg}}${currentLine}`);
+            lines.push(currentLine);
             currentLine = '';
           } else {
             // else add word to current line
@@ -64,12 +64,13 @@ export class MessageLog {
           }
         }
 
-        lines.push(`%c{${msg.fg}}${currentLine}`);
+        lines.push(currentLine);
         lines.reverse();
       }
 
       lines.forEach((line) => {
-        display.drawText(x, y + yOffset, line, width);
+        const text = `%c{${msg.fg}}${line}`;
+        display.drawText(x, y + yOffset, text, width);
         yOffset -= 1;
         if (yOffset < 0) return;
       });

@@ -1,4 +1,5 @@
 import { Actor, Entity } from './entity';
+import { Colors } from './colors';
 
 export interface Action {
   perform: (entity: Entity) => void;
@@ -52,11 +53,19 @@ export class MeleeAction extends ActionWithDirection {
       target.name
     }`;
 
+    const fg =
+      actor.name === 'Player' ? Colors.PlayerAttack : Colors.EnemyAttack;
     if (damage > 0) {
-      console.log(`${attackDescription} for ${damage} hit points.`);
+      window.engine.messageLog.addMessage(
+        `${attackDescription} for ${damage} hit points.`,
+        fg,
+      );
       target.fighter.hp -= damage;
     } else {
-      console.log(`${attackDescription} but does no damage.`);
+      window.engine.messageLog.addMessage(
+        `${attackDescription} but does no damage.`,
+        fg,
+      );
     }
   }
 }
