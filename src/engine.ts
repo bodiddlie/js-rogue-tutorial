@@ -5,12 +5,14 @@ import { Actor } from './entity';
 import { GameMap } from './game-map';
 import { generateDungeon } from './procgen';
 import { renderHealthBar } from './render-functions';
+import { MessageLog } from './message-log';
+import { Colors } from './colors';
 
 export class Engine {
   public static readonly WIDTH = 80;
   public static readonly HEIGHT = 50;
   public static readonly MAP_WIDTH = 80;
-  public static readonly MAP_HEIGHT = 45;
+  public static readonly MAP_HEIGHT = 43;
   public static readonly MIN_ROOM_SIZE = 6;
   public static readonly MAX_ROOM_SIZE = 10;
   public static readonly MAX_ROOMS = 30;
@@ -18,6 +20,7 @@ export class Engine {
 
   display: ROT.Display;
   gameMap: GameMap;
+  messageLog: MessageLog;
 
   constructor(public player: Actor) {
     this.display = new ROT.Display({
@@ -27,6 +30,12 @@ export class Engine {
     });
     const container = this.display.getContainer()!;
     document.body.appendChild(container);
+
+    this.messageLog = new MessageLog();
+    this.messageLog.addMessage(
+      'Hello and welcome, adventurer, to yet another dungeon!',
+      Colors.WelcomeText,
+    );
 
     this.gameMap = generateDungeon(
       Engine.MAP_WIDTH,
@@ -63,9 +72,8 @@ export class Engine {
 
       if (action) {
         action.perform(this.player);
+        this.handleEnemyTurns();
       }
-
-      this.handleEnemyTurns();
     }
 
     this.gameMap.updateFov(this.player);
@@ -73,6 +81,8 @@ export class Engine {
   }
 
   render() {
+    this.messageLog.render(this.display, 21, 45, 40, 5);
+
     renderHealthBar(
       this.display,
       this.player.fighter.hp,

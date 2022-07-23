@@ -95,7 +95,7 @@ const MOVE_KEYS: MovementMap = {
   n: new BumpAction(1, 1),
   // Wait keys
   5: new WaitAction(),
-  Period: new WaitAction(),
+  '.': new WaitAction(),
 };
 
 export function handleInput(event: KeyboardEvent): Action {
