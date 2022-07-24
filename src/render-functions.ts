@@ -31,3 +31,18 @@ function drawColoredBar(
     display.draw(pos, y, ' ', color, color);
   }
 }
+
+export function renderNamesAtLocation(x: number, y: number) {
+  const [mouseX, mouseY] = window.engine.mousePosition;
+  if (
+    window.engine.gameMap.isInBounds(mouseX, mouseY) &&
+    window.engine.gameMap.tiles[mouseY][mouseX].visible
+  ) {
+    const names = window.engine.gameMap.entities
+      .filter((e) => e.x === mouseX && e.y === mouseY)
+      .map((e) => e.name.charAt(0).toUpperCase() + e.name.substring(1))
+      .join(', ');
+
+    window.engine.display.drawText(x, y, names);
+  }
+}

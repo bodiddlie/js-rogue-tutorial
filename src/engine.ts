@@ -4,7 +4,7 @@ import { handleInput } from './input-handler';
 import { Actor } from './entity';
 import { GameMap } from './game-map';
 import { generateDungeon } from './procgen';
-import { renderHealthBar } from './render-functions';
+import { renderHealthBar, renderNamesAtLocation } from './render-functions';
 import { MessageLog } from './message-log';
 import { Colors } from './colors';
 
@@ -21,6 +21,7 @@ export class Engine {
   display: ROT.Display;
   gameMap: GameMap;
   messageLog: MessageLog;
+  mousePosition: [number, number];
 
   constructor(public player: Actor) {
     this.display = new ROT.Display({
@@ -28,6 +29,7 @@ export class Engine {
       height: Engine.HEIGHT,
       forceSquareRatio: true,
     });
+    this.mousePosition = [0, 0];
     const container = this.display.getContainer()!;
     document.body.appendChild(container);
 
@@ -52,8 +54,12 @@ export class Engine {
       this.update(event);
     });
 
+    window.addEventListener('mousemove', (event) => {
+      this.mousePosition = this.display.eventToPosition(event);
+      this.render();
+    });
+
     this.gameMap.updateFov(this.player);
-    this.render();
   }
 
   handleEnemyTurns() {
@@ -81,6 +87,7 @@ export class Engine {
   }
 
   render() {
+    this.display.clear();
     this.messageLog.render(this.display, 21, 45, 40, 5);
 
     renderHealthBar(
@@ -89,6 +96,9 @@ export class Engine {
       this.player.fighter.maxHp,
       20,
     );
+
+    renderNamesAtLocation(21, 44);
+
     this.gameMap.render();
   }
 }

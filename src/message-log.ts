@@ -45,7 +45,7 @@ export class MessageLog {
     let yOffset = height - 1;
 
     const reversed = this.messages.slice().reverse();
-    reversed.forEach((msg) => {
+    for (let msg of reversed) {
       let lines = [msg.fullText];
       if (msg.fullText.length > width) {
         const words = msg.fullText.split(' ');
@@ -68,12 +68,12 @@ export class MessageLog {
         lines.reverse();
       }
 
-      lines.forEach((line) => {
+      for (let line of lines) {
         const text = `%c{${msg.fg}}${line}`;
         display.drawText(x, y + yOffset, text, width);
         yOffset -= 1;
         if (yOffset < 0) return;
-      });
-    });
+      }
+    }
   }
 }

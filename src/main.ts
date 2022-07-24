@@ -9,4 +9,5 @@ declare global {
 
 window.addEventListener('DOMContentLoaded', () => {
   window.engine = new Engine(spawnPlayer(Engine.WIDTH / 2, Engine.HEIGHT / 2));
+  window.engine.render();
 });
