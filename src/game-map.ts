@@ -23,6 +23,10 @@ export class GameMap {
     }
   }
 
+  public get gameMap(): GameMap {
+    return this;
+  }
+
   public get actors(): Actor[] {
     return this.entities
       .filter((e) => e instanceof Actor)

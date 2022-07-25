@@ -74,9 +74,9 @@ function placeEntities(
 
     if (!dungeon.entities.some((e) => e.x == x && e.y == y)) {
       if (Math.random() < 0.8) {
-        dungeon.entities.push(spawnOrc(x, y));
+        spawnOrc(dungeon, x, y);
       } else {
-        dungeon.entities.push(spawnTroll(x, y));
+        spawnTroll(dungeon, x, y);
       }
     }
   }

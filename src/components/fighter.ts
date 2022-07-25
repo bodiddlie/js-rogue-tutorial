@@ -2,8 +2,8 @@ import { BaseComponent } from './base-component';
 import { Actor, RenderOrder } from '../entity';
 import { Colors } from '../colors';
 
-export class Fighter implements BaseComponent {
-  entity: Actor | null;
+export class Fighter extends BaseComponent {
+  parent: Actor | null;
   _hp: number;
 
   constructor(
@@ -11,8 +11,9 @@ export class Fighter implements BaseComponent {
     public defense: number,
     public power: number,
   ) {
+    super();
     this._hp = maxHp;
-    this.entity = null;
+    this.parent = null;
   }
 
   public get hp(): number {
@@ -22,30 +23,30 @@ export class Fighter implements BaseComponent {
   public set hp(value: number) {
     this._hp = Math.max(0, Math.min(value, this.maxHp));
 
-    if (this._hp === 0 && this.entity?.isAlive) {
+    if (this._hp === 0 && this.parent?.isAlive) {
       this.die();
     }
   }
 
   die() {
-    if (!this.entity) return;
+    if (!this.parent) return;
 
     let deathMessage = '';
     let fg = null;
-    if (window.engine.player === this.entity) {
+    if (window.engine.player === this.parent) {
       deathMessage = 'You died!';
       fg = Colors.PlayerDie;
     } else {
-      deathMessage = `${this.entity.name} is dead!`;
+      deathMessage = `${this.parent.name} is dead!`;
       fg = Colors.EnemyDie;
     }
 
-    this.entity.char = '%';
-    this.entity.fg = '#bf0000';
-    this.entity.blocksMovement = false;
-    this.entity.ai = null;
-    this.entity.name = `Remains of ${this.entity.name}`;
-    this.entity.renderOrder = RenderOrder.Corpse;
+    this.parent.char = '%';
+    this.parent.fg = '#bf0000';
+    this.parent.blocksMovement = false;
+    this.parent.ai = null;
+    this.parent.name = `Remains of ${this.parent.name}`;
+    this.parent.renderOrder = RenderOrder.Corpse;
 
     window.engine.messageLog.addMessage(deathMessage, fg);
   }
