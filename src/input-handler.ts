@@ -1,9 +1,17 @@
-import { Actor, Entity } from './entity';
+import { Actor, Entity, Item } from './entity';
 import { Colors } from './colors';
 import { EngineState } from './engine';
 
 export interface Action {
   perform: (entity: Entity) => void;
+}
+
+export class ItemAction implements Action {
+  constructor(public item: Item) {}
+
+  perform(entity: Entity) {
+    this.item.consumable.activate(this, entity);
+  }
 }
 
 export class WaitAction implements Action {
@@ -21,9 +29,27 @@ export class MovementAction extends ActionWithDirection {
     const destX = entity.x + this.dx;
     const destY = entity.y + this.dy;
 
-    if (!window.engine.gameMap.isInBounds(destX, destY)) return;
-    if (!window.engine.gameMap.tiles[destY][destX].walkable) return;
-    if (window.engine.gameMap.getBlockingEntityAtLocation(destX, destY)) return;
+    if (!window.engine.gameMap.isInBounds(destX, destY)) {
+      window.engine.messageLog.addMessage(
+        'That way is blocked.',
+        Colors.Impossible,
+      );
+      throw new Error('That way is blocked.');
+    }
+    if (!window.engine.gameMap.tiles[destY][destX].walkable) {
+      window.engine.messageLog.addMessage(
+        'That way is blocked.',
+        Colors.Impossible,
+      );
+      throw new Error('That way is blocked.');
+    }
+    if (window.engine.gameMap.getBlockingEntityAtLocation(destX, destY)) {
+      window.engine.messageLog.addMessage(
+        'That way is blocked.',
+        Colors.Impossible,
+      );
+      throw new Error('That way is blocked.');
+    }
     entity.move(this.dx, this.dy);
   }
 }
@@ -47,7 +73,13 @@ export class MeleeAction extends ActionWithDirection {
     const destY = actor.y + this.dy;
 
     const target = window.engine.gameMap.getActorAtLocation(destX, destY);
-    if (!target) return;
+    if (!target) {
+      window.engine.messageLog.addMessage(
+        'Nothing to attack',
+        Colors.Impossible,
+      );
+      throw new Error('Nothing to attack.');
+    }
 
     const damage = actor.fighter.power - target.fighter.defense;
     const attackDescription = `${actor.name.toUpperCase()} attacks ${

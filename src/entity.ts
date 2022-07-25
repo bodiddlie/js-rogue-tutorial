@@ -1,6 +1,7 @@
 import { BaseAI, HostileEnemy } from './components/ai';
 import { Fighter } from './components/fighter';
 import { GameMap } from './game-map';
+import { Consumable, HealingConsumable } from './components/consumable';
 
 export enum RenderOrder {
   Corpse,
@@ -56,6 +57,22 @@ export class Actor extends Entity {
   }
 }
 
+export class Item extends Entity {
+  constructor(
+    public x: number = 0,
+    public y: number = 0,
+    public char: string = '?',
+    public fg: string = '#fff',
+    public bg: string = '#000',
+    public name: string = '<Unnamed>',
+    public consumable: Consumable,
+    public parent: GameMap | null = null,
+  ) {
+    super(x, y, char, fg, bg, name, false, RenderOrder.Item, parent);
+    this.consumable.parent = this;
+  }
+}
+
 export function spawnPlayer(
   x: number,
   y: number,
@@ -98,6 +115,23 @@ export function spawnTroll(gameMap: GameMap, x: number, y: number): Entity {
     'Troll',
     new HostileEnemy(),
     new Fighter(16, 1, 4),
+    gameMap,
+  );
+}
+
+export function spawnHealthPotion(
+  gameMap: GameMap,
+  x: number,
+  y: number,
+): Entity {
+  return new Item(
+    x,
+    y,
+    '!',
+    '#7F00FF',
+    '#000',
+    'Health Potion',
+    new HealingConsumable(4),
     gameMap,
   );
 }

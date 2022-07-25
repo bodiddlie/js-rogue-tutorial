@@ -50,4 +50,18 @@ export class Fighter extends BaseComponent {
 
     window.engine.messageLog.addMessage(deathMessage, fg);
   }
+
+  heal(amount: number): number {
+    if (this.hp === this.maxHp) return 0;
+
+    const newHp = Math.min(this.maxHp, this.hp + amount);
+    const amountRecovered = newHp - this.hp;
+    this.hp = newHp;
+
+    return amountRecovered;
+  }
+
+  takeDamage(amount: number) {
+    this.hp -= amount;
+  }
 }

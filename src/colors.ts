@@ -8,4 +8,8 @@ export enum Colors {
   WelcomeText = '#20a0ff',
   BarFilled = '#006000',
   BarEmpty = '#401010',
+  Invalid = '#ffff00',
+  Impossible = '#808080',
+  Error = '#ff4040',
+  HealthRecovered = '#00ff00',
 }

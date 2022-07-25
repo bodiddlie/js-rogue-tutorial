@@ -21,6 +21,7 @@ export class Engine {
   public static readonly MAX_ROOM_SIZE = 10;
   public static readonly MAX_ROOMS = 30;
   public static readonly MAX_MONSTERS_PER_ROOM = 2;
+  public static readonly MAX_ITEMS_PER_ROOM = 2;
 
   display: ROT.Display;
   gameMap: GameMap;
@@ -54,6 +55,7 @@ export class Engine {
       Engine.MIN_ROOM_SIZE,
       Engine.MAX_ROOM_SIZE,
       Engine.MAX_MONSTERS_PER_ROOM,
+      Engine.MAX_ITEMS_PER_ROOM,
       player,
       this.display,
     );
@@ -82,7 +84,9 @@ export class Engine {
   handleEnemyTurns() {
     this.gameMap.actors.forEach((e) => {
       if (e.isAlive) {
-        e.ai?.perform(e);
+        try {
+          e.ai?.perform(e);
+        } catch {}
       }
     });
   }
@@ -102,11 +106,12 @@ export class Engine {
       const action = handleGameInput(event);
 
       if (action) {
-        action.perform(this.player);
-
-        if (this.state === EngineState.Game) {
-          this.handleEnemyTurns();
-        }
+        try {
+          action.perform(this.player);
+          if (this.state === EngineState.Game) {
+            this.handleEnemyTurns();
+          }
+        } catch {}
       }
     }
 
