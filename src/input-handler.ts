@@ -6,6 +6,40 @@ export interface Action {
   perform: (entity: Entity) => void;
 }
 
+export class PickupAction implements Action {
+  perform(entity: Entity) {
+    const consumer = entity as Actor;
+    if (!consumer) return;
+
+    const { x, y, inventory } = consumer;
+
+    for (const item of window.engine.gameMap.items) {
+      if (x === item.x && y == item.y) {
+        if (inventory.items.length >= inventory.capacity) {
+          window.engine.messageLog.addMessage(
+            'Your inventory is full.',
+            Colors.Impossible,
+          );
+          throw new Error('Your inventory is full.');
+        }
+
+        window.engine.gameMap.removeEntity(item);
+        item.parent = inventory;
+        inventory.items.push(item);
+
+        window.engine.messageLog.addMessage(`You picked up the ${item.name}!`);
+        return;
+      }
+    }
+
+    window.engine.messageLog.addMessage(
+      'There is nothing here to pick up.',
+      Colors.Impossible,
+    );
+    throw new Error('There is nothing here to pick up.');
+  }
+}
+
 export class ItemAction implements Action {
   constructor(public item: Item) {}
 
@@ -109,6 +143,24 @@ export class LogAction implements Action {
   }
 }
 
+export class InventoryAction implements Action {
+  constructor(public isUsing: boolean) {}
+
+  perform(_entity: Entity) {
+    window.engine.state = this.isUsing
+      ? EngineState.UseInventory
+      : EngineState.DropInventory;
+  }
+}
+
+class DropItem extends ItemAction {
+  perform(entity: Entity) {
+    const dropper = entity as Actor;
+    if (!dropper) return;
+    dropper.inventory.drop(this.item);
+  }
+}
+
 interface MovementMap {
   [key: string]: Action;
 }
@@ -146,6 +198,9 @@ const MOVE_KEYS: MovementMap = {
   '.': new WaitAction(),
   // UI keys
   v: new LogAction(),
+  g: new PickupAction(),
+  i: new InventoryAction(true),
+  d: new InventoryAction(false),
 };
 
 export function handleGameInput(event: KeyboardEvent): Action {
@@ -178,4 +233,28 @@ export function handleLogInput(event: KeyboardEvent): number {
     return 0;
   }
   return scrollAmount;
+}
+
+export function handleInventoryInput(event: KeyboardEvent): Action | null {
+  let action = null;
+  if (event.key.length === 1) {
+    const ordinal = event.key.charCodeAt(0);
+    const index = ordinal - 'a'.charCodeAt(0);
+
+    if (index >= 0 && index <= 26) {
+      const item = window.engine.player.inventory.items[index];
+      if (item) {
+        if (window.engine.state === EngineState.UseInventory) {
+          action = item.consumable.getAction();
+        } else if (window.engine.state === EngineState.DropInventory) {
+          action = new DropItem(item);
+        }
+      } else {
+        window.engine.messageLog.addMessage('Invalid entry.', Colors.Invalid);
+        return null;
+      }
+    }
+  }
+  window.engine.state = EngineState.Game;
+  return action;
 }

@@ -1,6 +1,10 @@
 import * as ROT from 'rot-js';
 
-import { handleGameInput, handleLogInput } from './input-handler';
+import {
+  handleGameInput,
+  handleInventoryInput,
+  handleLogInput,
+} from './input-handler';
 import { Actor } from './entity';
 import { GameMap } from './game-map';
 import { generateDungeon } from './procgen';
@@ -96,6 +100,11 @@ export class Engine {
       this.processGameLoop(event);
     } else if (this.state === EngineState.Log) {
       this.processLogLoop(event);
+    } else if (
+      this.state === EngineState.UseInventory ||
+      this.state === EngineState.DropInventory
+    ) {
+      this.processInventoryLoop(event);
     }
 
     this.render();
@@ -138,6 +147,11 @@ export class Engine {
     }
   }
 
+  processInventoryLoop(event: KeyboardEvent) {
+    const action = handleInventoryInput(event);
+    action?.perform(this.player);
+  }
+
   render() {
     this.display.clear();
     this.messageLog.render(this.display, 21, 45, 40, 5);
@@ -164,6 +178,31 @@ export class Engine {
         this.messageLog.messages.slice(0, this.logCursorPosition + 1),
       );
     }
+    if (this.state === EngineState.UseInventory) {
+      this.renderInventory('Select an item to use');
+    }
+    if (this.state === EngineState.DropInventory) {
+      this.renderInventory('Select an item to drop');
+    }
+  }
+
+  renderInventory(title: string) {
+    const itemCount = this.player.inventory.items.length;
+    const height = itemCount + 2 <= 3 ? 3 : itemCount + 2;
+    const width = title.length + 4;
+    const x = this.player.x <= 30 ? 40 : 0;
+    const y = 0;
+
+    renderFrameWithTitle(x, y, width, height, title);
+
+    if (itemCount > 0) {
+      this.player.inventory.items.forEach((i, index) => {
+        const key = String.fromCharCode('a'.charCodeAt(0) + index);
+        this.display.drawText(x + 1, y + index + 1, `(${key}) ${i.name}`);
+      });
+    } else {
+      this.display.drawText(x + 1, y + 1, '(Empty)');
+    }
   }
 }
 
@@ -171,4 +210,6 @@ export enum EngineState {
   Game,
   Dead,
   Log,
+  UseInventory,
+  DropInventory,
 }
