@@ -42,9 +42,20 @@ export class MessageLog {
     width: number,
     height: number,
   ) {
+    this.renderMessages(display, x, y, width, height, this.messages);
+  }
+
+  renderMessages(
+    display: Display,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    messages: Message[],
+  ) {
     let yOffset = height - 1;
 
-    const reversed = this.messages.slice().reverse();
+    const reversed = messages.slice().reverse();
     for (let msg of reversed) {
       let lines = [msg.fullText];
       if (msg.fullText.length > width) {
