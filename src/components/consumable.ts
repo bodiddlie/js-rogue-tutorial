@@ -1,6 +1,7 @@
 import { Actor, Entity, Item } from '../entity';
 import { Action, ItemAction } from '../input-handler';
 import { Colors } from '../colors';
+import { Inventory } from './inventory';
 
 export interface Consumable {
   parent: Item | null;
@@ -29,12 +30,26 @@ export class HealingConsumable implements Consumable {
         `You consume the ${this.parent?.name}, and recover ${amountRecovered} HP!`,
         Colors.HealthRecovered,
       );
+      this.consume();
     } else {
       window.engine.messageLog.addMessage(
         'Your health is already full.',
         Colors.Impossible,
       );
       throw new Error('Your health is already full.');
+    }
+  }
+
+  consume() {
+    const item = this.parent;
+    if (item) {
+      const inventory = item.parent;
+      if (inventory instanceof Inventory) {
+        const index = inventory.items.indexOf(item);
+        if (index >= 0) {
+          inventory.items.splice(index, 1);
+        }
+      }
     }
   }
 }
