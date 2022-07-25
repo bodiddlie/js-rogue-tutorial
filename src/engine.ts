@@ -149,7 +149,7 @@ export class Engine {
     this.gameMap.render();
 
     if (this.state === EngineState.Log) {
-      renderFrameWithTitle(3, 3, 74, 38, 'Test Frame');
+      renderFrameWithTitle(3, 3, 74, 38, 'Message History');
       this.messageLog.renderMessages(
         this.display,
         4,
