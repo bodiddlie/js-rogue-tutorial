@@ -2,7 +2,11 @@ import { BaseAI, HostileEnemy } from './components/ai';
 import { Fighter } from './components/fighter';
 import { Inventory } from './components/inventory';
 import { GameMap } from './game-map';
-import { Consumable, HealingConsumable } from './components/consumable';
+import {
+  Consumable,
+  HealingConsumable,
+  LightningConsumable,
+} from './components/consumable';
 import { BaseComponent } from './components/base-component';
 
 export enum RenderOrder {
@@ -49,6 +53,10 @@ export class Entity {
       this.parent = gameMap;
       gameMap.entities.push(this);
     }
+  }
+
+  distance(x: number, y: number) {
+    return Math.sqrt((x - this.x) ** 2 + (y - this.y) ** 2);
   }
 }
 
@@ -153,6 +161,19 @@ export function spawnHealthPotion(
     '#000',
     'Health Potion',
     new HealingConsumable(4),
+    gameMap,
+  );
+}
+
+export function spawnLightningScroll(gameMap: GameMap, x: number, y: number) {
+  return new Item(
+    x,
+    y,
+    '~',
+    '#FFFF00',
+    '#000',
+    'Lightning Scroll',
+    new LightningConsumable(20, 5),
     gameMap,
   );
 }

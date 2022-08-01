@@ -1,7 +1,13 @@
 import { GameMap } from './game-map';
 import { FLOOR_TILE, WALL_TILE, Tile } from './tile-types';
 import { Display } from 'rot-js';
-import { Entity, spawnHealthPotion, spawnOrc, spawnTroll } from './entity';
+import {
+  Entity,
+  spawnHealthPotion,
+  spawnLightningScroll,
+  spawnOrc,
+  spawnTroll,
+} from './entity';
 
 interface Bounds {
   x1: number;
@@ -88,7 +94,11 @@ function placeEntities(
     const y = generateRandomNumber(bounds.y1 + 1, bounds.y2 - 1);
 
     if (!dungeon.entities.some((e) => e.x == x && e.y == y)) {
-      spawnHealthPotion(dungeon, x, y);
+      if (Math.random() < 0.7) {
+        spawnHealthPotion(dungeon, x, y);
+      } else {
+        spawnLightningScroll(dungeon, x, y);
+      }
     }
   }
 }
