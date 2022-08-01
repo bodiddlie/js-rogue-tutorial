@@ -1,9 +1,9 @@
 import * as ROT from 'rot-js';
 
 import {
-  handleGameInput,
-  handleInventoryInput,
-  handleLogInput,
+  BaseInputHandler,
+  GameInputHandler,
+  InputState,
 } from './input-handler';
 import { Actor } from './entity';
 import { GameMap } from './game-map';
@@ -15,6 +15,7 @@ import {
 } from './render-functions';
 import { MessageLog } from './message-log';
 import { Colors } from './colors';
+import { Action } from './actions';
 
 export class Engine {
   public static readonly WIDTH = 80;
@@ -31,8 +32,8 @@ export class Engine {
   gameMap: GameMap;
   messageLog: MessageLog;
   mousePosition: [number, number];
-  _state: EngineState;
   logCursorPosition: number;
+  inputHandler: BaseInputHandler;
 
   constructor(public player: Actor) {
     this.display = new ROT.Display({
@@ -40,7 +41,6 @@ export class Engine {
       height: Engine.HEIGHT,
       forceSquareRatio: true,
     });
-    this._state = EngineState.Game;
     this.mousePosition = [0, 0];
     const container = this.display.getContainer()!;
     this.logCursorPosition = 0;
@@ -51,6 +51,8 @@ export class Engine {
       'Hello and welcome, adventurer, to yet another dungeon!',
       Colors.WelcomeText,
     );
+
+    this.inputHandler = new GameInputHandler();
 
     this.gameMap = generateDungeon(
       Engine.MAP_WIDTH,
@@ -76,15 +78,6 @@ export class Engine {
     this.gameMap.updateFov(this.player);
   }
 
-  public get state() {
-    return this._state;
-  }
-
-  public set state(value) {
-    this._state = value;
-    this.logCursorPosition = this.messageLog.messages.length - 1;
-  }
-
   handleEnemyTurns() {
     this.gameMap.actors.forEach((e) => {
       if (e.isAlive) {
@@ -96,60 +89,18 @@ export class Engine {
   }
 
   update(event: KeyboardEvent) {
-    if (this.state === EngineState.Game) {
-      this.processGameLoop(event);
-    } else if (this.state === EngineState.Log) {
-      this.processLogLoop(event);
-    } else if (
-      this.state === EngineState.UseInventory ||
-      this.state === EngineState.DropInventory
-    ) {
-      this.processInventoryLoop(event);
+    const action = this.inputHandler.handleKeyboardInput(event);
+    if (action instanceof Action) {
+      try {
+        action.perform(this.player);
+        this.handleEnemyTurns();
+        this.gameMap.updateFov(this.player);
+      } catch {}
     }
+
+    this.inputHandler = this.inputHandler.nextHandler;
 
     this.render();
-  }
-
-  processGameLoop(event: KeyboardEvent) {
-    if (this.player.fighter.hp > 0) {
-      const action = handleGameInput(event);
-
-      if (action) {
-        try {
-          action.perform(this.player);
-          if (this.state === EngineState.Game) {
-            this.handleEnemyTurns();
-          }
-        } catch {}
-      }
-    }
-
-    this.gameMap.updateFov(this.player);
-  }
-
-  processLogLoop(event: KeyboardEvent) {
-    const scrollAmount = handleLogInput(event);
-    if (scrollAmount < 0 && this.logCursorPosition === 0) {
-      this.logCursorPosition = this.messageLog.messages.length - 1;
-    } else if (
-      scrollAmount > 0 &&
-      this.logCursorPosition === this.messageLog.messages.length - 1
-    ) {
-      this.logCursorPosition = 0;
-    } else {
-      this.logCursorPosition = Math.max(
-        0,
-        Math.min(
-          this.logCursorPosition + scrollAmount,
-          this.messageLog.messages.length - 1,
-        ),
-      );
-    }
-  }
-
-  processInventoryLoop(event: KeyboardEvent) {
-    const action = handleInventoryInput(event);
-    action?.perform(this.player);
   }
 
   render() {
@@ -167,7 +118,7 @@ export class Engine {
 
     this.gameMap.render();
 
-    if (this.state === EngineState.Log) {
+    if (this.inputHandler.inputState === InputState.Log) {
       renderFrameWithTitle(3, 3, 74, 38, 'Message History');
       this.messageLog.renderMessages(
         this.display,
@@ -178,10 +129,10 @@ export class Engine {
         this.messageLog.messages.slice(0, this.logCursorPosition + 1),
       );
     }
-    if (this.state === EngineState.UseInventory) {
+    if (this.inputHandler.inputState === InputState.UseInventory) {
       this.renderInventory('Select an item to use');
     }
-    if (this.state === EngineState.DropInventory) {
+    if (this.inputHandler.inputState === InputState.DropInventory) {
       this.renderInventory('Select an item to drop');
     }
   }
@@ -204,12 +155,4 @@ export class Engine {
       this.display.drawText(x + 1, y + 1, '(Empty)');
     }
   }
-}
-
-export enum EngineState {
-  Game,
-  Dead,
-  Log,
-  UseInventory,
-  DropInventory,
 }

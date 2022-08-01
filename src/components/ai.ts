@@ -1,11 +1,6 @@
 import * as ROT from 'rot-js';
 
-import {
-  Action,
-  MeleeAction,
-  MovementAction,
-  WaitAction,
-} from '../input-handler';
+import { Action, MeleeAction, MovementAction, WaitAction } from '../actions';
 import { Actor, Entity } from '../entity';
 
 export abstract class BaseAI implements Action {

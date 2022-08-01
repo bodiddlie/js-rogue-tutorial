@@ -1,5 +1,5 @@
 import { Actor, Entity, Item } from '../entity';
-import { Action, ItemAction } from '../input-handler';
+import { Action, ItemAction } from '../actions';
 import { Colors } from '../colors';
 import { Inventory } from './inventory';
 
