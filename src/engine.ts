@@ -135,6 +135,12 @@ export class Engine {
     if (this.inputHandler.inputState === InputState.DropInventory) {
       this.renderInventory('Select an item to drop');
     }
+    if (this.inputHandler.inputState === InputState.Target) {
+      const [x, y] = this.mousePosition;
+      const data = this.display._data[`${x},${y}`];
+      const char = data ? data[2] || ' ' : ' ';
+      this.display.drawOver(x, y, char[0], '#000', '#fff');
+    }
   }
 
   renderInventory(title: string) {

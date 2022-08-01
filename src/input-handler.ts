@@ -8,6 +8,7 @@ import {
   WaitAction,
 } from './actions';
 import { Colors } from './colors';
+import { Engine } from './engine';
 
 interface LogMap {
   [key: string]: number;
@@ -23,6 +24,7 @@ export enum InputState {
   Log,
   UseInventory,
   DropInventory,
+  Target,
 }
 
 export abstract class BaseInputHandler {
@@ -38,49 +40,46 @@ interface DirectionMap {
   [key: string]: [number, number];
 }
 
+const MOVE_KEYS: DirectionMap = {
+  // Arrow Keys
+  ArrowUp: [0, -1],
+  ArrowDown: [0, 1],
+  ArrowLeft: [-1, 0],
+  ArrowRight: [1, 0],
+  Home: [-1, -1],
+  End: [-1, 1],
+  PageUp: [1, -1],
+  PageDown: [1, 1],
+  // Numpad Keys
+  1: [-1, 1],
+  2: [0, 1],
+  3: [1, 1],
+  4: [-1, 0],
+  6: [1, 0],
+  7: [-1, -1],
+  8: [0, -1],
+  9: [1, -1],
+  // Vi keys
+  h: [-1, 0],
+  j: [0, 1],
+  k: [0, -1],
+  l: [1, 0],
+  y: [-1, -1],
+  u: [1, -1],
+  b: [-1, 1],
+  n: [1, 1],
+  // UI keys
+};
+
 export class GameInputHandler extends BaseInputHandler {
-  MOVE_KEYS: DirectionMap;
   constructor() {
     super();
-    this.MOVE_KEYS = {
-      // Arrow Keys
-      ArrowUp: [0, -1],
-      ArrowDown: [0, 1],
-      ArrowLeft: [-1, 0],
-      ArrowRight: [1, 0],
-      Home: [-1, -1],
-      End: [-1, 1],
-      PageUp: [1, -1],
-      PageDown: [1, 1],
-      // Numpad Keys
-      1: [-1, 1],
-      2: [0, 1],
-      3: [1, 1],
-      4: [-1, 0],
-      6: [1, 0],
-      7: [-1, -1],
-      8: [0, -1],
-      9: [1, -1],
-      // Vi keys
-      h: [-1, 0],
-      j: [0, 1],
-      k: [0, -1],
-      l: [1, 0],
-      y: [-1, -1],
-      u: [1, -1],
-      b: [-1, 1],
-      n: [1, 1],
-      // UI keys
-      // g: new PickupAction(),
-      // i: new InventoryAction(true),
-      // d: new InventoryAction(false),
-    };
   }
 
   handleKeyboardInput(event: KeyboardEvent): Action | null {
     if (window.engine.player.fighter.hp > 0) {
-      if (event.key in this.MOVE_KEYS) {
-        const [dx, dy] = this.MOVE_KEYS[event.key];
+      if (event.key in MOVE_KEYS) {
+        const [dx, dy] = MOVE_KEYS[event.key];
         return new BumpAction(dx, dy);
       }
       if (event.key === 'v') {
@@ -97,6 +96,9 @@ export class GameInputHandler extends BaseInputHandler {
       }
       if (event.key === 'd') {
         this.nextHandler = new InventoryInputHandler(InputState.DropInventory);
+      }
+      if (event.key === '/') {
+        this.nextHandler = new LookHandler();
       }
     }
 
@@ -175,6 +177,51 @@ export class InventoryInputHandler extends BaseInputHandler {
         }
       }
     }
+    this.nextHandler = new GameInputHandler();
+    return null;
+  }
+}
+
+export abstract class SelectIndexHandler extends BaseInputHandler {
+  protected constructor() {
+    super(InputState.Target);
+    const { x, y } = window.engine.player;
+    window.engine.mousePosition = [x, y];
+  }
+
+  handleKeyboardInput(event: KeyboardEvent): Action | null {
+    if (event.key in MOVE_KEYS) {
+      const moveAmount = MOVE_KEYS[event.key];
+      let modifier = 1;
+      if (event.shiftKey) modifier = 5;
+      if (event.ctrlKey) modifier = 10;
+      if (event.altKey) modifier = 20;
+
+      let [x, y] = window.engine.mousePosition;
+      const [dx, dy] = moveAmount;
+      x += dx * modifier;
+      y += dy * modifier;
+      x = Math.max(0, Math.min(x, Engine.MAP_WIDTH - 1));
+      y = Math.max(0, Math.min(y, Engine.MAP_HEIGHT - 1));
+      window.engine.mousePosition = [x, y];
+      return null;
+    } else if (event.key === 'Enter') {
+      return this.onIndexSelected();
+    }
+
+    this.nextHandler = new GameInputHandler();
+    return null;
+  }
+
+  abstract onIndexSelected(): Action | null;
+}
+
+export class LookHandler extends SelectIndexHandler {
+  constructor() {
+    super();
+  }
+
+  onIndexSelected(): Action | null {
     this.nextHandler = new GameInputHandler();
     return null;
   }
