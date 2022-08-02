@@ -3,6 +3,7 @@ import { FLOOR_TILE, WALL_TILE, Tile } from './tile-types';
 import { Display } from 'rot-js';
 import {
   Entity,
+  spawnConfusionScroll,
   spawnHealthPotion,
   spawnLightningScroll,
   spawnOrc,
@@ -94,8 +95,11 @@ function placeEntities(
     const y = generateRandomNumber(bounds.y1 + 1, bounds.y2 - 1);
 
     if (!dungeon.entities.some((e) => e.x == x && e.y == y)) {
-      if (Math.random() < 0.7) {
+      const itemChance = Math.random();
+      if (itemChance < 0.7) {
         spawnHealthPotion(dungeon, x, y);
+      } else if (itemChance < 0.9) {
+        spawnConfusionScroll(dungeon, x, y);
       } else {
         spawnLightningScroll(dungeon, x, y);
       }
@@ -154,7 +158,7 @@ export function generateDungeon(
   return dungeon;
 }
 
-function generateRandomNumber(min: number, max: number) {
+export function generateRandomNumber(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 

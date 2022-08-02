@@ -3,6 +3,7 @@ import { Fighter } from './components/fighter';
 import { Inventory } from './components/inventory';
 import { GameMap } from './game-map';
 import {
+  ConfusionConsumable,
   Consumable,
   HealingConsumable,
   LightningConsumable,
@@ -174,6 +175,19 @@ export function spawnLightningScroll(gameMap: GameMap, x: number, y: number) {
     '#000',
     'Lightning Scroll',
     new LightningConsumable(20, 5),
+    gameMap,
+  );
+}
+
+export function spawnConfusionScroll(gameMap: GameMap, x: number, y: number) {
+  return new Item(
+    x,
+    y,
+    '~',
+    '#cf3fff',
+    '#000',
+    'Confusion Scroll',
+    new ConfusionConsumable(10),
     gameMap,
   );
 }

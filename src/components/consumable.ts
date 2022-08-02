@@ -2,6 +2,9 @@ import { Actor, Entity, Item } from '../entity';
 import { Action, ItemAction } from '../actions';
 import { Colors } from '../colors';
 import { Inventory } from './inventory';
+import { SingleRangedAttackHandler } from '../input-handler';
+import { ConfusedEnemy } from './ai';
+import { ImpossibleException } from '../exceptions';
 
 export abstract class Consumable {
   protected constructor(public parent: Item | null) {}
@@ -13,7 +16,7 @@ export abstract class Consumable {
     return null;
   }
 
-  abstract activate(entity: Entity): void;
+  abstract activate(action: ItemAction, entity: Entity): void;
 
   consume() {
     const item = this.parent;
@@ -34,7 +37,7 @@ export class HealingConsumable extends Consumable {
     super(parent);
   }
 
-  activate(entity: Entity) {
+  activate(_action: ItemAction, entity: Entity) {
     const consumer = entity as Actor;
     if (!consumer) return;
 
@@ -47,11 +50,7 @@ export class HealingConsumable extends Consumable {
       );
       this.consume();
     } else {
-      window.engine.messageLog.addMessage(
-        'Your health is already full.',
-        Colors.Impossible,
-      );
-      throw new Error('Your health is already full.');
+      throw new ImpossibleException('Your health is already full.');
     }
   }
 }
@@ -65,7 +64,7 @@ export class LightningConsumable extends Consumable {
     super(parent);
   }
 
-  activate(entity: Entity) {
+  activate(_action: ItemAction, entity: Entity) {
     let target: Actor | null = null;
     let closestDistance = this.maxRange + 1.0;
 
@@ -92,7 +91,47 @@ export class LightningConsumable extends Consumable {
       window.engine.messageLog.addMessage(
         'No enemy is close enough to strike.',
       );
-      throw new Error('No enemy is close enough to strike.');
+      throw new ImpossibleException('No enemy is close enough to strike.');
     }
+  }
+}
+
+export class ConfusionConsumable extends Consumable {
+  constructor(public numberOfTurns: number, parent: Item | null = null) {
+    super(parent);
+  }
+
+  getAction(): Action | null {
+    window.engine.messageLog.addMessage(
+      'Select a target location.',
+      Colors.NeedsTarget,
+    );
+    window.engine.inputHandler = new SingleRangedAttackHandler((x, y) => {
+      return new ItemAction(this.parent, [x, y]);
+    });
+    return null;
+  }
+
+  activate(action: ItemAction, entity: Entity) {
+    const target = action.targetActor;
+
+    if (!target) {
+      throw new ImpossibleException('You must select an enemy to target.');
+    }
+    if (!window.engine.gameMap.tiles[target.y][target.x].visible) {
+      throw new ImpossibleException(
+        'You cannot target an area you cannot see.',
+      );
+    }
+    if (Object.is(target, entity)) {
+      throw new ImpossibleException('You cannot confuse yourself!');
+    }
+
+    window.engine.messageLog.addMessage(
+      `The eyes of the ${target.name} look vacant, as it starts to stumble around!`,
+      Colors.StatusEffectApplied,
+    );
+    target.ai = new ConfusedEnemy(target.ai, this.numberOfTurns);
+    this.consume();
   }
 }

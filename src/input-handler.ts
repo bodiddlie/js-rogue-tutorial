@@ -206,14 +206,15 @@ export abstract class SelectIndexHandler extends BaseInputHandler {
       window.engine.mousePosition = [x, y];
       return null;
     } else if (event.key === 'Enter') {
-      return this.onIndexSelected();
+      let [x, y] = window.engine.mousePosition;
+      return this.onIndexSelected(x, y);
     }
 
     this.nextHandler = new GameInputHandler();
     return null;
   }
 
-  abstract onIndexSelected(): Action | null;
+  abstract onIndexSelected(x: number, y: number): Action | null;
 }
 
 export class LookHandler extends SelectIndexHandler {
@@ -221,8 +222,21 @@ export class LookHandler extends SelectIndexHandler {
     super();
   }
 
-  onIndexSelected(): Action | null {
+  onIndexSelected(_x: number, _y: number): Action | null {
     this.nextHandler = new GameInputHandler();
     return null;
+  }
+}
+
+type ActionCallback = (x: number, y: number) => Action | null;
+
+export class SingleRangedAttackHandler extends SelectIndexHandler {
+  constructor(public callback: ActionCallback) {
+    super();
+  }
+
+  onIndexSelected(x: number, y: number): Action | null {
+    this.nextHandler = new GameInputHandler();
+    return this.callback(x, y);
   }
 }

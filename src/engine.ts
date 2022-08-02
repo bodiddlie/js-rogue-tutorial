@@ -16,6 +16,7 @@ import {
 import { MessageLog } from './message-log';
 import { Colors } from './colors';
 import { Action } from './actions';
+import { ImpossibleException } from './exceptions';
 
 export class Engine {
   public static readonly WIDTH = 80;
@@ -95,7 +96,11 @@ export class Engine {
         action.perform(this.player);
         this.handleEnemyTurns();
         this.gameMap.updateFov(this.player);
-      } catch {}
+      } catch (error) {
+        if (error instanceof ImpossibleException) {
+          this.messageLog.addMessage(error.message, Colors.Impossible);
+        }
+      }
     }
 
     this.inputHandler = this.inputHandler.nextHandler;
