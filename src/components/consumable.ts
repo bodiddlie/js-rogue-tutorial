@@ -2,7 +2,10 @@ import { Actor, Entity, Item } from '../entity';
 import { Action, ItemAction } from '../actions';
 import { Colors } from '../colors';
 import { Inventory } from './inventory';
-import { SingleRangedAttackHandler } from '../input-handler';
+import {
+  AreaRangedAttackHandler,
+  SingleRangedAttackHandler,
+} from '../input-handler';
 import { ConfusedEnemy } from './ai';
 import { ImpossibleException } from '../exceptions';
 
@@ -133,5 +136,59 @@ export class ConfusionConsumable extends Consumable {
     );
     target.ai = new ConfusedEnemy(target.ai, this.numberOfTurns);
     this.consume();
+  }
+}
+
+export class FireballDamageConsumable extends Consumable {
+  constructor(
+    public damage: number,
+    public radius: number,
+    parent: Item | null = null,
+  ) {
+    super(parent);
+  }
+
+  getAction(): Action | null {
+    window.engine.messageLog.addMessage(
+      'Select a target location.',
+      Colors.NeedsTarget,
+    );
+    window.engine.inputHandler = new AreaRangedAttackHandler(
+      this.radius,
+      (x, y) => {
+        return new ItemAction(this.parent, [x, y]);
+      },
+    );
+    return null;
+  }
+
+  activate(action: ItemAction, _entity: Entity) {
+    const { targetPosition } = action;
+
+    if (!targetPosition) {
+      throw new ImpossibleException('You must select an area to target.');
+    }
+    const [x, y] = targetPosition;
+    if (!window.engine.gameMap.tiles[y][x].visible) {
+      throw new ImpossibleException(
+        'You cannot target an area that you cannot see.',
+      );
+    }
+
+    let targetsHit = false;
+    for (let actor of window.engine.gameMap.actors) {
+      if (actor.distance(x, y) <= this.radius) {
+        window.engine.messageLog.addMessage(
+          `The ${actor.name} is engulfed in a fiery explosion, taking ${this.damage} damage!`,
+        );
+        actor.fighter.takeDamage(this.damage);
+        targetsHit = true;
+      }
+
+      if (!targetsHit) {
+        throw new ImpossibleException('There are no targets in the radius.');
+      }
+      this.consume();
+    }
   }
 }

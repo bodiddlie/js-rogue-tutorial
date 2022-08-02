@@ -5,6 +5,7 @@ import { GameMap } from './game-map';
 import {
   ConfusionConsumable,
   Consumable,
+  FireballDamageConsumable,
   HealingConsumable,
   LightningConsumable,
 } from './components/consumable';
@@ -188,6 +189,19 @@ export function spawnConfusionScroll(gameMap: GameMap, x: number, y: number) {
     '#000',
     'Confusion Scroll',
     new ConfusionConsumable(10),
+    gameMap,
+  );
+}
+
+export function spawnFireballScroll(gameMap: GameMap, x: number, y: number) {
+  return new Item(
+    x,
+    y,
+    '~',
+    '#ff0000',
+    '#000',
+    'Fireball Scroll',
+    new FireballDamageConsumable(12, 3),
     gameMap,
   );
 }

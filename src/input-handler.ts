@@ -9,6 +9,7 @@ import {
 } from './actions';
 import { Colors } from './colors';
 import { Engine } from './engine';
+import { Display } from 'rot-js';
 
 interface LogMap {
   [key: string]: number;
@@ -34,6 +35,8 @@ export abstract class BaseInputHandler {
   }
 
   abstract handleKeyboardInput(event: KeyboardEvent): Action | null;
+
+  onRender(_display: Display) {}
 }
 
 interface DirectionMap {
@@ -233,6 +236,30 @@ type ActionCallback = (x: number, y: number) => Action | null;
 export class SingleRangedAttackHandler extends SelectIndexHandler {
   constructor(public callback: ActionCallback) {
     super();
+  }
+
+  onIndexSelected(x: number, y: number): Action | null {
+    this.nextHandler = new GameInputHandler();
+    return this.callback(x, y);
+  }
+}
+
+export class AreaRangedAttackHandler extends SelectIndexHandler {
+  constructor(public radius: number, public callback: ActionCallback) {
+    super();
+  }
+
+  onRender(display: Display) {
+    const startX = window.engine.mousePosition[0] - this.radius - 1;
+    const startY = window.engine.mousePosition[1] - this.radius - 1;
+
+    for (let x = startX; x < startX + this.radius ** 2; x++) {
+      for (let y = startY; y < startY + this.radius ** 2; y++) {
+        const data = display._data[`${x},${y}`];
+        const char = data ? data[2] || ' ' : ' ';
+        display.drawOver(x, y, char[0], '#fff', '#f00');
+      }
+    }
   }
 
   onIndexSelected(x: number, y: number): Action | null {

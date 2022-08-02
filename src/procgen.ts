@@ -4,6 +4,7 @@ import { Display } from 'rot-js';
 import {
   Entity,
   spawnConfusionScroll,
+  spawnFireballScroll,
   spawnHealthPotion,
   spawnLightningScroll,
   spawnOrc,
@@ -98,6 +99,8 @@ function placeEntities(
       const itemChance = Math.random();
       if (itemChance < 0.7) {
         spawnHealthPotion(dungeon, x, y);
+      } else if (itemChance < 0.8) {
+        spawnFireballScroll(dungeon, x, y);
       } else if (itemChance < 0.9) {
         spawnConfusionScroll(dungeon, x, y);
       } else {
