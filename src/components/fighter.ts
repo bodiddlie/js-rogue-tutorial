@@ -48,7 +48,7 @@ export class Fighter extends BaseComponent {
     this.parent.name = `Remains of ${this.parent.name}`;
     this.parent.renderOrder = RenderOrder.Corpse;
 
-    window.engine.messageLog.addMessage(deathMessage, fg);
+    window.messageLog.addMessage(deathMessage, fg);
   }
 
   heal(amount: number): number {

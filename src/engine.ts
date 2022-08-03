@@ -13,7 +13,6 @@ import {
   renderHealthBar,
   renderNamesAtLocation,
 } from './render-functions';
-import { MessageLog } from './message-log';
 import { Colors } from './colors';
 import { Action } from './actions';
 import { ImpossibleException } from './exceptions';
@@ -31,7 +30,6 @@ export class Engine {
 
   display: ROT.Display;
   gameMap: GameMap;
-  messageLog: MessageLog;
   mousePosition: [number, number];
   logCursorPosition: number;
   inputHandler: BaseInputHandler;
@@ -46,12 +44,6 @@ export class Engine {
     const container = this.display.getContainer()!;
     this.logCursorPosition = 0;
     document.body.appendChild(container);
-
-    this.messageLog = new MessageLog();
-    this.messageLog.addMessage(
-      'Hello and welcome, adventurer, to yet another dungeon!',
-      Colors.WelcomeText,
-    );
 
     this.inputHandler = new GameInputHandler();
 
@@ -98,7 +90,7 @@ export class Engine {
         this.gameMap.updateFov(this.player);
       } catch (error) {
         if (error instanceof ImpossibleException) {
-          this.messageLog.addMessage(error.message, Colors.Impossible);
+          window.messageLog.addMessage(error.message, Colors.Impossible);
         }
       }
     }
@@ -110,7 +102,7 @@ export class Engine {
 
   render() {
     this.display.clear();
-    this.messageLog.render(this.display, 21, 45, 40, 5);
+    window.messageLog.render(this.display, 21, 45, 40, 5);
 
     renderHealthBar(
       this.display,
@@ -125,13 +117,13 @@ export class Engine {
 
     if (this.inputHandler.inputState === InputState.Log) {
       renderFrameWithTitle(3, 3, 74, 38, 'Message History');
-      this.messageLog.renderMessages(
+      window.messageLog.renderMessages(
         this.display,
         4,
         4,
         72,
         36,
-        this.messageLog.messages.slice(0, this.logCursorPosition + 1),
+        window.messageLog.messages.slice(0, this.logCursorPosition + 1),
       );
     }
     if (this.inputHandler.inputState === InputState.UseInventory) {
@@ -142,9 +134,7 @@ export class Engine {
     }
     if (this.inputHandler.inputState === InputState.Target) {
       const [x, y] = this.mousePosition;
-      const data = this.display._data[`${x},${y}`];
-      const char = data ? data[2] || ' ' : ' ';
-      this.display.drawOver(x, y, char[0], '#000', '#fff');
+      this.display.drawOver(x, y, null, '#000', '#fff');
     }
     this.inputHandler.onRender(this.display);
   }

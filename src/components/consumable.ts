@@ -47,7 +47,7 @@ export class HealingConsumable extends Consumable {
     const amountRecovered = consumer.fighter.heal(this.amount);
 
     if (amountRecovered > 0) {
-      window.engine.messageLog.addMessage(
+      window.messageLog.addMessage(
         `You consume the ${this.parent?.name}, and recover ${amountRecovered} HP!`,
         Colors.HealthRecovered,
       );
@@ -85,15 +85,13 @@ export class LightningConsumable extends Consumable {
     }
 
     if (target) {
-      window.engine.messageLog.addMessage(
+      window.messageLog.addMessage(
         `A lightning bolt strikes the ${target.name} with a loud thunder, for ${this.damage} damage!`,
       );
       target.fighter.takeDamage(this.damage);
       this.consume();
     } else {
-      window.engine.messageLog.addMessage(
-        'No enemy is close enough to strike.',
-      );
+      window.messageLog.addMessage('No enemy is close enough to strike.');
       throw new ImpossibleException('No enemy is close enough to strike.');
     }
   }
@@ -105,7 +103,7 @@ export class ConfusionConsumable extends Consumable {
   }
 
   getAction(): Action | null {
-    window.engine.messageLog.addMessage(
+    window.messageLog.addMessage(
       'Select a target location.',
       Colors.NeedsTarget,
     );
@@ -130,7 +128,7 @@ export class ConfusionConsumable extends Consumable {
       throw new ImpossibleException('You cannot confuse yourself!');
     }
 
-    window.engine.messageLog.addMessage(
+    window.messageLog.addMessage(
       `The eyes of the ${target.name} look vacant, as it starts to stumble around!`,
       Colors.StatusEffectApplied,
     );
@@ -149,7 +147,7 @@ export class FireballDamageConsumable extends Consumable {
   }
 
   getAction(): Action | null {
-    window.engine.messageLog.addMessage(
+    window.messageLog.addMessage(
       'Select a target location.',
       Colors.NeedsTarget,
     );
@@ -178,7 +176,7 @@ export class FireballDamageConsumable extends Consumable {
     let targetsHit = false;
     for (let actor of window.engine.gameMap.actors) {
       if (actor.distance(x, y) <= this.radius) {
-        window.engine.messageLog.addMessage(
+        window.messageLog.addMessage(
           `The ${actor.name} is engulfed in a fiery explosion, taking ${this.damage} damage!`,
         );
         actor.fighter.takeDamage(this.damage);

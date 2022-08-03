@@ -23,7 +23,7 @@ export class PickupAction extends Action {
         item.parent = inventory;
         inventory.items.push(item);
 
-        window.engine.messageLog.addMessage(`You picked up the ${item.name}!`);
+        window.messageLog.addMessage(`You picked up the ${item.name}!`);
         return;
       }
     }
@@ -114,13 +114,13 @@ export class MeleeAction extends ActionWithDirection {
     const fg =
       actor.name === 'Player' ? Colors.PlayerAttack : Colors.EnemyAttack;
     if (damage > 0) {
-      window.engine.messageLog.addMessage(
+      window.messageLog.addMessage(
         `${attackDescription} for ${damage} hit points.`,
         fg,
       );
       target.fighter.hp -= damage;
     } else {
-      window.engine.messageLog.addMessage(
+      window.messageLog.addMessage(
         `${attackDescription} but does no damage.`,
         fg,
       );

@@ -122,7 +122,7 @@ export class LogInputHandler extends BaseInputHandler {
       return new LogAction(
         () =>
           (window.engine.logCursorPosition =
-            window.engine.messageLog.messages.length - 1),
+            window.messageLog.messages.length - 1),
       );
     }
 
@@ -134,12 +134,11 @@ export class LogInputHandler extends BaseInputHandler {
 
     return new LogAction(() => {
       if (scrollAmount < 0 && window.engine.logCursorPosition === 0) {
-        window.engine.logCursorPosition =
-          window.engine.messageLog.messages.length - 1;
+        window.engine.logCursorPosition = window.messageLog.messages.length - 1;
       } else if (
         scrollAmount > 0 &&
         window.engine.logCursorPosition ===
-          window.engine.messageLog.messages.length - 1
+          window.messageLog.messages.length - 1
       ) {
         window.engine.logCursorPosition = 0;
       } else {
@@ -147,7 +146,7 @@ export class LogInputHandler extends BaseInputHandler {
           0,
           Math.min(
             window.engine.logCursorPosition + scrollAmount,
-            window.engine.messageLog.messages.length - 1,
+            window.messageLog.messages.length - 1,
           ),
         );
       }
@@ -175,7 +174,7 @@ export class InventoryInputHandler extends BaseInputHandler {
             return new DropItem(item);
           }
         } else {
-          window.engine.messageLog.addMessage('Invalid entry.', Colors.Invalid);
+          window.messageLog.addMessage('Invalid entry.', Colors.Invalid);
           return null;
         }
       }
@@ -255,9 +254,7 @@ export class AreaRangedAttackHandler extends SelectIndexHandler {
 
     for (let x = startX; x < startX + this.radius ** 2; x++) {
       for (let y = startY; y < startY + this.radius ** 2; y++) {
-        const data = display._data[`${x},${y}`];
-        const char = data ? data[2] || ' ' : ' ';
-        display.drawOver(x, y, char[0], '#fff', '#f00');
+        display.drawOver(x, y, null, '#fff', '#f00');
       }
     }
   }

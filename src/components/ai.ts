@@ -93,9 +93,7 @@ export class ConfusedEnemy extends BaseAI {
     if (!actor) return;
 
     if (this.turnsRemaining <= 0) {
-      window.engine.messageLog.addMessage(
-        `The ${entity.name} is no longer confused.`,
-      );
+      window.messageLog.addMessage(`The ${entity.name} is no longer confused.`);
       actor.ai = this.previousAi;
     } else {
       const [directionX, directionY] =

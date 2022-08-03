@@ -18,7 +18,7 @@ export class Inventory extends BaseComponent {
       if (this.parent) {
         item.place(this.parent.x, this.parent.y, window.engine.gameMap);
       }
-      window.engine.messageLog.addMessage(`You dropped the ${item.name}."`);
+      window.messageLog.addMessage(`You dropped the ${item.name}."`);
     }
   }
 }
