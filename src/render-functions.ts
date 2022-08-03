@@ -32,8 +32,12 @@ function drawColoredBar(
   }
 }
 
-export function renderNamesAtLocation(x: number, y: number) {
-  const [mouseX, mouseY] = window.engine.mousePosition;
+export function renderNamesAtLocation(
+  x: number,
+  y: number,
+  mousePosition: [number, number],
+) {
+  const [mouseX, mouseY] = mousePosition;
   if (
     window.engine.gameMap.isInBounds(mouseX, mouseY) &&
     window.engine.gameMap.tiles[mouseY][mouseX].visible

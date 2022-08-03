@@ -30,8 +30,6 @@ export class Engine {
 
   display: ROT.Display;
   gameMap: GameMap;
-  mousePosition: [number, number];
-  logCursorPosition: number;
   inputHandler: BaseInputHandler;
 
   constructor(public player: Actor) {
@@ -40,9 +38,7 @@ export class Engine {
       height: Engine.HEIGHT,
       forceSquareRatio: true,
     });
-    this.mousePosition = [0, 0];
     const container = this.display.getContainer()!;
-    this.logCursorPosition = 0;
     document.body.appendChild(container);
 
     this.inputHandler = new GameInputHandler();
@@ -64,7 +60,9 @@ export class Engine {
     });
 
     window.addEventListener('mousemove', (event) => {
-      this.mousePosition = this.display.eventToPosition(event);
+      this.inputHandler.handleMouseMovement(
+        this.display.eventToPosition(event),
+      );
       this.render();
     });
 
@@ -111,7 +109,7 @@ export class Engine {
       20,
     );
 
-    renderNamesAtLocation(21, 44);
+    renderNamesAtLocation(21, 44, this.inputHandler.mousePosition);
 
     this.gameMap.render();
 
@@ -123,7 +121,10 @@ export class Engine {
         4,
         72,
         36,
-        window.messageLog.messages.slice(0, this.logCursorPosition + 1),
+        window.messageLog.messages.slice(
+          0,
+          this.inputHandler.logCursorPosition + 1,
+        ),
       );
     }
     if (this.inputHandler.inputState === InputState.UseInventory) {
@@ -133,7 +134,7 @@ export class Engine {
       this.renderInventory('Select an item to drop');
     }
     if (this.inputHandler.inputState === InputState.Target) {
-      const [x, y] = this.mousePosition;
+      const [x, y] = this.inputHandler.mousePosition;
       this.display.drawOver(x, y, null, '#000', '#fff');
     }
     this.inputHandler.onRender(this.display);
