@@ -3,7 +3,8 @@ import * as ROT from 'rot-js';
 import { BaseInputHandler, GameInputHandler } from './input-handler';
 import { Actor, spawnPlayer } from './entity';
 import { BaseScreen } from './screens/base-screen';
-import { GameScreen } from './screens/game-screen';
+// import { GameScreen } from './screens/game-screen';
+import { MainMenu } from './screens/main-menu';
 
 export class Engine {
   public static readonly WIDTH = 80;
@@ -36,16 +37,21 @@ export class Engine {
     });
 
     window.addEventListener('mousemove', (event) => {
-      this.inputHandler.handleMouseMovement(
+      this.screen.inputHandler.handleMouseMovement(
         this.display.eventToPosition(event),
       );
       this.screen.render();
     });
 
-    this.screen = new GameScreen(this.display, this.player);
+    // this.screen = new GameScreen(this.display, this.player);
+    this.screen = new MainMenu(this.display, this.player);
   }
 
   update(event: KeyboardEvent) {
-    this.screen.update(event);
+    const screen = this.screen.update(event);
+    if (!Object.is(screen, this.screen)) {
+      this.screen = screen;
+      this.screen.render();
+    }
   }
 }

@@ -58,7 +58,7 @@ export class GameScreen extends BaseScreen {
     });
   }
 
-  update(event: KeyboardEvent) {
+  update(event: KeyboardEvent): BaseScreen {
     const action = this.inputHandler.handleKeyboardInput(event);
     if (action instanceof Action) {
       try {
@@ -75,6 +75,7 @@ export class GameScreen extends BaseScreen {
     this.inputHandler = this.inputHandler.nextHandler;
 
     this.render();
+    return this;
   }
 
   render() {
