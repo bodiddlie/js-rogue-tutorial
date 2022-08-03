@@ -8,6 +8,7 @@ import {
 } from '../input-handler';
 import { ConfusedEnemy } from './ai';
 import { ImpossibleException } from '../exceptions';
+import { GameMap } from '../game-map';
 
 export abstract class Consumable {
   protected constructor(public parent: Item | null) {}
@@ -19,7 +20,7 @@ export abstract class Consumable {
     return null;
   }
 
-  abstract activate(action: ItemAction, entity: Entity): void;
+  abstract activate(action: ItemAction, entity: Entity, gameMap: GameMap): void;
 
   consume() {
     const item = this.parent;
@@ -67,14 +68,14 @@ export class LightningConsumable extends Consumable {
     super(parent);
   }
 
-  activate(_action: ItemAction, entity: Entity) {
+  activate(_action: ItemAction, entity: Entity, gameMap: GameMap) {
     let target: Actor | null = null;
     let closestDistance = this.maxRange + 1.0;
 
-    for (const actor of window.engine.gameMap.actors) {
+    for (const actor of gameMap.actors) {
       if (
         !Object.is(actor, entity) &&
-        window.engine.gameMap.tiles[actor.y][actor.x].visible
+        gameMap.tiles[actor.y][actor.x].visible
       ) {
         const distance = entity.distance(actor.x, actor.y);
         if (distance < closestDistance) {
@@ -107,19 +108,21 @@ export class ConfusionConsumable extends Consumable {
       'Select a target location.',
       Colors.NeedsTarget,
     );
-    window.engine.inputHandler = new SingleRangedAttackHandler((x, y) => {
-      return new ItemAction(this.parent, [x, y]);
-    });
+    window.engine.screen.inputHandler = new SingleRangedAttackHandler(
+      (x, y) => {
+        return new ItemAction(this.parent, [x, y]);
+      },
+    );
     return null;
   }
 
-  activate(action: ItemAction, entity: Entity) {
+  activate(action: ItemAction, entity: Entity, gameMap: GameMap) {
     const target = action.targetActor;
 
     if (!target) {
       throw new ImpossibleException('You must select an enemy to target.');
     }
-    if (!window.engine.gameMap.tiles[target.y][target.x].visible) {
+    if (!gameMap.tiles[target.y][target.x].visible) {
       throw new ImpossibleException(
         'You cannot target an area you cannot see.',
       );
@@ -151,7 +154,7 @@ export class FireballDamageConsumable extends Consumable {
       'Select a target location.',
       Colors.NeedsTarget,
     );
-    window.engine.inputHandler = new AreaRangedAttackHandler(
+    window.engine.screen.inputHandler = new AreaRangedAttackHandler(
       this.radius,
       (x, y) => {
         return new ItemAction(this.parent, [x, y]);
@@ -160,21 +163,21 @@ export class FireballDamageConsumable extends Consumable {
     return null;
   }
 
-  activate(action: ItemAction, _entity: Entity) {
+  activate(action: ItemAction, _entity: Entity, gameMap: GameMap) {
     const { targetPosition } = action;
 
     if (!targetPosition) {
       throw new ImpossibleException('You must select an area to target.');
     }
     const [x, y] = targetPosition;
-    if (!window.engine.gameMap.tiles[y][x].visible) {
+    if (!gameMap.tiles[y][x].visible) {
       throw new ImpossibleException(
         'You cannot target an area that you cannot see.',
       );
     }
 
     let targetsHit = false;
-    for (let actor of window.engine.gameMap.actors) {
+    for (let actor of gameMap.actors) {
       if (actor.distance(x, y) <= this.radius) {
         window.messageLog.addMessage(
           `The ${actor.name} is engulfed in a fiery explosion, taking ${this.damage} damage!`,

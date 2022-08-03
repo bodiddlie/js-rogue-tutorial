@@ -39,10 +39,10 @@ export function renderNamesAtLocation(
 ) {
   const [mouseX, mouseY] = mousePosition;
   if (
-    window.engine.gameMap.isInBounds(mouseX, mouseY) &&
-    window.engine.gameMap.tiles[mouseY][mouseX].visible
+    window.engine.screen.gameMap?.isInBounds(mouseX, mouseY) &&
+    window.engine.screen.gameMap?.tiles[mouseY][mouseX].visible
   ) {
-    const names = window.engine.gameMap.entities
+    const names = window.engine.screen.gameMap?.entities
       .filter((e) => e.x === mouseX && e.y === mouseY)
       .map((e) => e.name.charAt(0).toUpperCase() + e.name.substring(1))
       .join(', ');

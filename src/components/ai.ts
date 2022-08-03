@@ -9,6 +9,7 @@ import {
 } from '../actions';
 import { Actor, Entity } from '../entity';
 import { generateRandomNumber } from '../procgen';
+import { GameMap } from '../game-map';
 
 export abstract class BaseAI implements Action {
   path: [number, number][];
@@ -17,20 +18,15 @@ export abstract class BaseAI implements Action {
     this.path = [];
   }
 
-  abstract perform(entity: Entity): void;
+  abstract perform(entity: Entity, gameMap: GameMap): void;
 
-  /**
-   * Compute and return a path to the target position.
-   *
-   * If there is no valid path then return an empty list.
-   *
-   * @param destX
-   * @param destY
-   * @param entity
-   */
-  calculatePathTo(destX: number, destY: number, entity: Entity) {
-    const isPassable = (x: number, y: number) =>
-      window.engine.gameMap.tiles[y][x].walkable;
+  calculatePathTo(
+    destX: number,
+    destY: number,
+    entity: Entity,
+    gameMap: GameMap,
+  ) {
+    const isPassable = (x: number, y: number) => gameMap.tiles[y][x].walkable;
     const dijkstra = new ROT.Path.Dijkstra(destX, destY, isPassable, {});
 
     this.path = [];
@@ -47,17 +43,17 @@ export class HostileEnemy extends BaseAI {
     super();
   }
 
-  perform(entity: Entity) {
+  perform(entity: Entity, gameMap: GameMap) {
     const target = window.engine.player;
     const dx = target.x - entity.x;
     const dy = target.y - entity.y;
     const distance = Math.max(Math.abs(dx), Math.abs(dy));
 
-    if (window.engine.gameMap.tiles[entity.y][entity.x].visible) {
+    if (gameMap.tiles[entity.y][entity.x].visible) {
       if (distance <= 1) {
-        return new MeleeAction(dx, dy).perform(entity as Actor);
+        return new MeleeAction(dx, dy).perform(entity as Actor, gameMap);
       }
-      this.calculatePathTo(target.x, target.y, entity);
+      this.calculatePathTo(target.x, target.y, entity, gameMap);
     }
 
     if (this.path.length > 0) {
@@ -65,6 +61,7 @@ export class HostileEnemy extends BaseAI {
       this.path.shift();
       return new MovementAction(destX - entity.x, destY - entity.y).perform(
         entity,
+        gameMap,
       );
     }
 
@@ -88,7 +85,7 @@ export class ConfusedEnemy extends BaseAI {
     super();
   }
 
-  perform(entity: Entity) {
+  perform(entity: Entity, gameMap: GameMap) {
     const actor = entity as Actor;
     if (!actor) return;
 
@@ -100,7 +97,7 @@ export class ConfusedEnemy extends BaseAI {
         directions[generateRandomNumber(0, directions.length)];
       this.turnsRemaining -= 1;
       const action = new BumpAction(directionX, directionY);
-      action.perform(entity);
+      action.perform(entity, gameMap);
     }
   }
 }

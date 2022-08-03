@@ -17,5 +17,5 @@ window.addEventListener('DOMContentLoaded', () => {
     'Hello and welcome, adventurer, to yet another dungeon!',
     Colors.WelcomeText,
   );
-  window.engine.render();
+  window.engine.screen.render();
 });
