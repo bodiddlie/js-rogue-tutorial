@@ -117,7 +117,7 @@ export class ConfusionConsumable extends Consumable {
   }
 
   activate(action: ItemAction, entity: Entity, gameMap: GameMap) {
-    const target = action.targetActor;
+    const target = action.targetActor(gameMap);
 
     if (!target) {
       throw new ImpossibleException('You must select an enemy to target.');

@@ -16,6 +16,7 @@ import {
   renderHealthBar,
   renderNamesAtLocation,
 } from '../render-functions';
+import { HostileEnemy } from '../components/ai';
 
 export class GameScreen extends BaseScreen {
   public static readonly MAP_WIDTH = 80;
@@ -59,6 +60,11 @@ export class GameScreen extends BaseScreen {
   }
 
   update(event: KeyboardEvent): BaseScreen {
+    if (event.key === 's') {
+      this.saveGame();
+      return this;
+    }
+
     const action = this.inputHandler.handleKeyboardInput(event);
     if (action instanceof Action) {
       try {
@@ -138,4 +144,80 @@ export class GameScreen extends BaseScreen {
       this.display.drawText(x + 1, y + 1, '(Empty)');
     }
   }
+
+  private saveGame() {
+    console.log(JSON.stringify(this.toObject()));
+    try {
+      localStorage.setItem('roguesave', JSON.stringify(this.toObject()));
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  private toObject(): SerializedGameMap {
+    return {
+      width: this.gameMap.width,
+      height: this.gameMap.height,
+      entities: this.gameMap.entities.map((e) => {
+        let fighter = null;
+        let aiType = null;
+        let inventory = null;
+
+        if (e instanceof Actor) {
+          const actor = e as Actor;
+          const { maxHp, _hp: hp, defense, power } = actor.fighter;
+          fighter = { maxHp, hp, defense, power };
+          if (actor.ai) {
+            aiType = actor.ai instanceof HostileEnemy ? 'hostile' : 'confused';
+          }
+          if (actor.inventory) {
+            inventory = [];
+            for (let item of actor.inventory.items) {
+              inventory.push(item.name);
+            }
+          }
+        }
+        return {
+          x: e.x,
+          y: e.y,
+          char: e.char,
+          fg: e.fg,
+          bg: e.bg,
+          name: e.name,
+          fighter,
+          aiType,
+          inventory,
+        };
+      }),
+    };
+  }
 }
+
+type SerializedGameMap = {
+  width: number;
+  height: number;
+  entities: SerializedEntity[];
+};
+
+type SerializedEntity = {
+  x: number;
+  y: number;
+  char: string;
+  fg: string;
+  bg: string;
+  name: string;
+  fighter: SerializedFighter | null;
+  aiType: string | null;
+  inventory: SerializedItem[] | null;
+};
+
+type SerializedFighter = {
+  maxHp: number;
+  hp: number;
+  defense: number;
+  power: number;
+};
+
+type SerializedItem = {
+  itemType: string;
+};

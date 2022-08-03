@@ -20,7 +20,7 @@ export class PickupAction extends Action {
           throw new ImpossibleException('Your inventory is full.');
         }
 
-        window.engine.screen.gameMap?.removeEntity(item);
+        gameMap.removeEntity(item);
         item.parent = inventory;
         inventory.items.push(item);
 
@@ -41,12 +41,12 @@ export class ItemAction extends Action {
     super();
   }
 
-  public get targetActor(): Actor | undefined {
+  targetActor(gameMap: GameMap): Actor | undefined {
     if (!this.targetPosition) {
       return;
     }
     const [x, y] = this.targetPosition;
-    return window.engine.screen.gameMap?.getActorAtLocation(x, y);
+    return gameMap.getActorAtLocation(x, y);
   }
 
   perform(entity: Entity, gameMap: GameMap) {
