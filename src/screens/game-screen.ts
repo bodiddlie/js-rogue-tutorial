@@ -2,7 +2,17 @@ import { BaseScreen } from './base-screen';
 import { GameMap } from '../game-map';
 import { Display } from 'rot-js';
 import { generateDungeon } from '../procgen';
-import { Actor } from '../entity';
+import {
+  Actor,
+  Item,
+  spawnConfusionScroll,
+  spawnFireballScroll,
+  spawnHealthPotion,
+  spawnLightningScroll,
+  spawnOrc,
+  spawnPlayer,
+  spawnTroll,
+} from '../entity';
 import {
   BaseInputHandler,
   GameInputHandler,
@@ -16,7 +26,8 @@ import {
   renderHealthBar,
   renderNamesAtLocation,
 } from '../render-functions';
-import { HostileEnemy } from '../components/ai';
+import { ConfusedEnemy, HostileEnemy } from '../components/ai';
+import { Tile } from '../tile-types';
 
 export class GameScreen extends BaseScreen {
   public static readonly MAP_WIDTH = 80;
@@ -30,20 +41,30 @@ export class GameScreen extends BaseScreen {
   gameMap: GameMap;
   inputHandler: BaseInputHandler;
 
-  constructor(display: Display, player: Actor) {
+  constructor(
+    display: Display,
+    player: Actor,
+    serializedGameMap: string | null = null,
+  ) {
     super(display, player);
 
-    this.gameMap = generateDungeon(
-      GameScreen.MAP_WIDTH,
-      GameScreen.MAP_HEIGHT,
-      GameScreen.MAX_ROOMS,
-      GameScreen.MIN_ROOM_SIZE,
-      GameScreen.MAX_ROOM_SIZE,
-      GameScreen.MAX_MONSTERS_PER_ROOM,
-      GameScreen.MAX_ITEMS_PER_ROOM,
-      this.player,
-      this.display,
-    );
+    if (serializedGameMap) {
+      const [map, loadedPlayer] = GameScreen.load(serializedGameMap, display);
+      this.gameMap = map;
+      this.player = loadedPlayer;
+    } else {
+      this.gameMap = generateDungeon(
+        GameScreen.MAP_WIDTH,
+        GameScreen.MAP_HEIGHT,
+        GameScreen.MAX_ROOMS,
+        GameScreen.MIN_ROOM_SIZE,
+        GameScreen.MAX_ROOM_SIZE,
+        GameScreen.MAX_MONSTERS_PER_ROOM,
+        GameScreen.MAX_ITEMS_PER_ROOM,
+        this.player,
+        this.display,
+      );
+    }
 
     this.inputHandler = new GameInputHandler();
     this.gameMap.updateFov(this.player);
@@ -95,7 +116,12 @@ export class GameScreen extends BaseScreen {
       20,
     );
 
-    renderNamesAtLocation(21, 44, this.inputHandler.mousePosition);
+    renderNamesAtLocation(
+      21,
+      44,
+      this.inputHandler.mousePosition,
+      this.gameMap,
+    );
 
     this.gameMap?.render();
 
@@ -146,22 +172,92 @@ export class GameScreen extends BaseScreen {
   }
 
   private saveGame() {
-    console.log(JSON.stringify(this.toObject()));
     try {
       localStorage.setItem('roguesave', JSON.stringify(this.toObject()));
-    } catch (err) {
-      console.log(err);
+    } catch (err) {}
+  }
+
+  private static load(
+    serializedGameMap: string,
+    display: Display,
+  ): [GameMap, Actor] {
+    const parsedMap = JSON.parse(serializedGameMap) as SerializedGameMap;
+    const playerEntity = parsedMap.entities.find((e) => e.name === 'Player');
+    if (!playerEntity) throw new Error('shit broke');
+    const player = spawnPlayer(playerEntity.x, playerEntity.y);
+    player.fighter.hp = playerEntity.fighter?.hp || player.fighter.hp;
+    window.engine.player = player;
+
+    const map = new GameMap(parsedMap.width, parsedMap.height, display, [
+      player,
+    ]);
+    map.tiles = parsedMap.tiles;
+
+    const playerInventory = playerEntity?.inventory || [];
+    for (let entry of playerInventory) {
+      let item: Item | null = null;
+      switch (entry.itemType) {
+        case 'Health Potion': {
+          item = spawnHealthPotion(map, 0, 0);
+          break;
+        }
+        case 'Lightning Scroll': {
+          item = spawnLightningScroll(map, 0, 0);
+          break;
+        }
+        case 'Confusion Scroll': {
+          item = spawnConfusionScroll(map, 0, 0);
+          break;
+        }
+        case 'Fireball Scroll': {
+          item = spawnFireballScroll(map, 0, 0);
+          break;
+        }
+      }
+
+      if (item) {
+        map.removeEntity(item);
+        item.parent = player.inventory;
+        player.inventory.items.push(item);
+      }
     }
+
+    for (let e of parsedMap.entities) {
+      if (e.name === 'Orc') {
+        const orc = spawnOrc(map, e.x, e.y);
+        orc.fighter.hp = e.fighter?.hp || orc.fighter.hp;
+        if (e.aiType === 'confused') {
+          orc.ai = new ConfusedEnemy(orc.ai, e.confusedTurnsRemaining);
+        }
+      } else if (e.name === 'Troll') {
+        const troll = spawnTroll(map, e.x, e.y);
+        troll.fighter.hp = e.fighter?.hp || troll.fighter.hp;
+        if (e.aiType === 'confused') {
+          troll.ai = new ConfusedEnemy(troll.ai, e.confusedTurnsRemaining);
+        }
+      } else if (e.name === 'Health Potion') {
+        spawnHealthPotion(map, e.x, e.y);
+      } else if (e.name === 'Lightning Scroll') {
+        spawnLightningScroll(map, e.x, e.y);
+      } else if (e.name === 'Confusion Scroll') {
+        spawnConfusionScroll(map, e.x, e.y);
+      } else if (e.name === 'Fireball Scroll') {
+        spawnFireballScroll(map, e.x, e.y);
+      }
+    }
+    return [map, player];
   }
 
   private toObject(): SerializedGameMap {
     return {
       width: this.gameMap.width,
       height: this.gameMap.height,
+      tiles: this.gameMap.tiles,
       entities: this.gameMap.entities.map((e) => {
         let fighter = null;
         let aiType = null;
         let inventory = null;
+        let confusedTurnsRemaining = 0;
 
         if (e instanceof Actor) {
           const actor = e as Actor;
@@ -169,11 +265,15 @@ export class GameScreen extends BaseScreen {
           fighter = { maxHp, hp, defense, power };
           if (actor.ai) {
             aiType = actor.ai instanceof HostileEnemy ? 'hostile' : 'confused';
+            confusedTurnsRemaining =
+              aiType === 'confused'
+                ? (actor.ai as ConfusedEnemy).turnsRemaining
+                : 0;
           }
           if (actor.inventory) {
             inventory = [];
             for (let item of actor.inventory.items) {
-              inventory.push(item.name);
+              inventory.push({ itemType: item.name });
             }
           }
         }
@@ -186,6 +286,7 @@ export class GameScreen extends BaseScreen {
           name: e.name,
           fighter,
           aiType,
+          confusedTurnsRemaining,
           inventory,
         };
       }),
@@ -196,6 +297,7 @@ export class GameScreen extends BaseScreen {
 type SerializedGameMap = {
   width: number;
   height: number;
+  tiles: Tile[][];
   entities: SerializedEntity[];
 };
 
@@ -208,6 +310,7 @@ type SerializedEntity = {
   name: string;
   fighter: SerializedFighter | null;
   aiType: string | null;
+  confusedTurnsRemaining: number;
   inventory: SerializedItem[] | null;
 };
 

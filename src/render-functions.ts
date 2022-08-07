@@ -1,6 +1,7 @@
 import { Display } from 'rot-js';
 
 import { Colors } from './colors';
+import {GameMap} from "./game-map";
 
 export function renderHealthBar(
   display: Display,
@@ -36,13 +37,14 @@ export function renderNamesAtLocation(
   x: number,
   y: number,
   mousePosition: [number, number],
+  gameMap: GameMap
 ) {
   const [mouseX, mouseY] = mousePosition;
   if (
-    window.engine.screen.gameMap?.isInBounds(mouseX, mouseY) &&
-    window.engine.screen.gameMap?.tiles[mouseY][mouseX].visible
+    gameMap.isInBounds(mouseX, mouseY) &&
+    gameMap.tiles[mouseY][mouseX].visible
   ) {
-    const names = window.engine.screen.gameMap?.entities
+    const names = gameMap.entities
       .filter((e) => e.x === mouseX && e.y === mouseY)
       .map((e) => e.name.charAt(0).toUpperCase() + e.name.substring(1))
       .join(', ');
