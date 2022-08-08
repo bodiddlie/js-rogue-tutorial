@@ -58,6 +58,23 @@ export class WaitAction extends Action {
   perform(_entity: Entity) {}
 }
 
+export class TakeStairsAction extends Action {
+  perform(entity: Entity, gameMap: GameMap) {
+    if (
+      entity.x === gameMap.downstairsLocation[0] &&
+      entity.y == gameMap.downstairsLocation[1]
+    ) {
+      window.engine.screen.generateFloor();
+      window.messageLog.addMessage(
+        'You descend the staircase.',
+        Colors.Descend,
+      );
+    } else {
+      throw new ImpossibleException('There are no stairs here.');
+    }
+  }
+}
+
 export abstract class ActionWithDirection extends Action {
   constructor(public dx: number, public dy: number) {
     super();

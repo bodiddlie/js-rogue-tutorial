@@ -5,6 +5,7 @@ import {
   DropItem,
   LogAction,
   PickupAction,
+  TakeStairsAction,
   WaitAction,
 } from './actions';
 import { Colors } from './colors';
@@ -111,6 +112,9 @@ export class GameInputHandler extends BaseInputHandler {
       }
       if (event.key === '/') {
         this.nextHandler = new LookHandler();
+      }
+      if (event.key === '>') {
+        return new TakeStairsAction();
       }
     }
 

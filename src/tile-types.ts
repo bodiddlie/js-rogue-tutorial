@@ -30,3 +30,12 @@ export const WALL_TILE: Tile = {
   dark: { char: ' ', fg: '#fff', bg: '#000064' },
   light: { char: ' ', fg: '#fff', bg: '#826e32' },
 };
+
+export const STAIRS_DOWN_TILE: Tile = {
+  walkable: true,
+  transparent: true,
+  visible: false,
+  seen: false,
+  dark: { char: '>', fg: '#000064', bg: '#323296' },
+  light: { char: '>', fg: '#ffffff', bg: '#c8b432' },
+};

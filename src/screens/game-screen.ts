@@ -38,13 +38,14 @@ export class GameScreen extends BaseScreen {
   public static readonly MAX_MONSTERS_PER_ROOM = 2;
   public static readonly MAX_ITEMS_PER_ROOM = 2;
 
-  gameMap: GameMap;
+  gameMap!: GameMap;
   inputHandler: BaseInputHandler;
 
   constructor(
     display: Display,
     player: Actor,
     serializedGameMap: string | null = null,
+    public currentFloor: number = 0,
   ) {
     super(display, player);
 
@@ -53,17 +54,7 @@ export class GameScreen extends BaseScreen {
       this.gameMap = map;
       this.player = loadedPlayer;
     } else {
-      this.gameMap = generateDungeon(
-        GameScreen.MAP_WIDTH,
-        GameScreen.MAP_HEIGHT,
-        GameScreen.MAX_ROOMS,
-        GameScreen.MIN_ROOM_SIZE,
-        GameScreen.MAX_ROOM_SIZE,
-        GameScreen.MAX_MONSTERS_PER_ROOM,
-        GameScreen.MAX_ITEMS_PER_ROOM,
-        this.player,
-        this.display,
-      );
+      this.generateFloor();
     }
 
     this.inputHandler = new GameInputHandler();
@@ -71,13 +62,29 @@ export class GameScreen extends BaseScreen {
   }
 
   handleEnemyTurns() {
-    this.gameMap?.actors.forEach((e) => {
+    this.gameMap.actors.forEach((e) => {
       if (e.isAlive) {
         try {
           e.ai?.perform(e, this.gameMap);
         } catch {}
       }
     });
+  }
+
+  generateFloor(): void {
+    this.currentFloor += 1;
+
+    this.gameMap = generateDungeon(
+      GameScreen.MAP_WIDTH,
+      GameScreen.MAP_HEIGHT,
+      GameScreen.MAX_ROOMS,
+      GameScreen.MIN_ROOM_SIZE,
+      GameScreen.MAX_ROOM_SIZE,
+      GameScreen.MAX_MONSTERS_PER_ROOM,
+      GameScreen.MAX_ITEMS_PER_ROOM,
+      this.player,
+      this.display,
+    );
   }
 
   update(event: KeyboardEvent): BaseScreen {
@@ -91,7 +98,7 @@ export class GameScreen extends BaseScreen {
       try {
         action.perform(this.player, this.gameMap);
         this.handleEnemyTurns();
-        this.gameMap?.updateFov(this.player);
+        this.gameMap.updateFov(this.player);
       } catch (error) {
         if (error instanceof ImpossibleException) {
           window.messageLog.addMessage(error.message, Colors.Impossible);
@@ -123,7 +130,9 @@ export class GameScreen extends BaseScreen {
       this.gameMap,
     );
 
-    this.gameMap?.render();
+    this.display.drawText(0, 47, `Dungeon level: ${this.currentFloor}`);
+
+    this.gameMap.render();
 
     if (this.inputHandler.inputState === InputState.Log) {
       renderFrameWithTitle(3, 3, 74, 38, 'Message History');

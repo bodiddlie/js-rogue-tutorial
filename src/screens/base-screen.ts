@@ -9,5 +9,7 @@ export abstract class BaseScreen {
 
   abstract update(event: KeyboardEvent): BaseScreen;
 
+  generateFloor() {}
+
   abstract render(): void;
 }
