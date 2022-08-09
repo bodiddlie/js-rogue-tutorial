@@ -49,6 +49,8 @@ export class Fighter extends BaseComponent {
     this.parent.renderOrder = RenderOrder.Corpse;
 
     window.messageLog.addMessage(deathMessage, fg);
+
+    window.engine.player.level.addXp(this.parent.level.xpGiven);
   }
 
   heal(amount: number): number {
