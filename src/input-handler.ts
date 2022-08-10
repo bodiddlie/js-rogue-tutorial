@@ -115,6 +115,9 @@ export class GameInputHandler extends BaseInputHandler {
       if (event.key === 'd') {
         this.nextHandler = new InventoryInputHandler(InputState.DropInventory);
       }
+      if (event.key === 'c') {
+        this.nextHandler = new CharacterScreenInputHandler();
+      }
       if (event.key === '/') {
         this.nextHandler = new LookHandler();
       }
@@ -325,6 +328,52 @@ export class LevelUpEventHandler extends BaseInputHandler {
       return null;
     }
 
+    this.nextHandler = new GameInputHandler();
+    return null;
+  }
+}
+
+export class CharacterScreenInputHandler extends BaseInputHandler {
+  constructor() {
+    super();
+  }
+
+  onRender(display: Display) {
+    const x = window.engine.player.x <= 30 ? 40 : 0;
+    const y = 0;
+    const title = 'Character Information';
+    const width = title.length + 4;
+
+    renderFrameWithTitle(x, y, width, 7, title);
+
+    display.drawText(
+      x + 1,
+      y + 1,
+      `Level: ${window.engine.player.level.currentLevel}`,
+    );
+    display.drawText(
+      x + 1,
+      y + 2,
+      `XP: ${window.engine.player.level.currentXp}`,
+    );
+    display.drawText(
+      x + 1,
+      y + 3,
+      `XP for next Level: ${window.engine.player.level.experienceToNextLevel}`,
+    );
+    display.drawText(
+      x + 1,
+      y + 4,
+      `Attack: ${window.engine.player.fighter.power}`,
+    );
+    display.drawText(
+      x + 1,
+      y + 5,
+      `Defense: ${window.engine.player.fighter.defense}`,
+    );
+  }
+
+  handleKeyboardInput(_event: KeyboardEvent): Action | null {
     this.nextHandler = new GameInputHandler();
     return null;
   }

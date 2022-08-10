@@ -7,7 +7,7 @@ export class Level extends BaseComponent {
     public xpGiven: number = 0,
     public currentLevel: number = 1,
     public currentXp: number = 0,
-    public levelUpFactor: number = 200,
+    public levelUpFactor: number = 150,
   ) {
     super();
   }

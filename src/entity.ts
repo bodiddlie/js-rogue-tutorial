@@ -118,7 +118,7 @@ export function spawnPlayer(
     null,
     new Fighter(30, 2, 5),
     new Inventory(26),
-    new Level(20),
+    new Level(200),
     gameMap,
   );
   player.level.parent = player;
