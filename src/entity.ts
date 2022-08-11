@@ -224,3 +224,16 @@ export function spawnFireballScroll(
     gameMap,
   );
 }
+
+type SPAWNMAP = {
+  [key: string]: (gameMap: GameMap, x: number, y: number) => Entity;
+};
+
+export const spawnMap: SPAWNMAP = {
+  spawnOrc,
+  spawnTroll,
+  spawnHealthPotion,
+  spawnConfusionScroll,
+  spawnLightningScroll,
+  spawnFireballScroll,
+};

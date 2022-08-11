@@ -84,10 +84,9 @@ export class GameScreen extends BaseScreen {
       GameScreen.MAX_ROOMS,
       GameScreen.MIN_ROOM_SIZE,
       GameScreen.MAX_ROOM_SIZE,
-      GameScreen.MAX_MONSTERS_PER_ROOM,
-      GameScreen.MAX_ITEMS_PER_ROOM,
       this.player,
       this.display,
+      this.currentFloor,
     );
   }
 
