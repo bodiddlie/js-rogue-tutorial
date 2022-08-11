@@ -50,9 +50,13 @@ export class GameScreen extends BaseScreen {
     super(display, player);
 
     if (serializedGameMap) {
-      const [map, loadedPlayer] = GameScreen.load(serializedGameMap, display);
+      const [map, loadedPlayer, floor] = GameScreen.load(
+        serializedGameMap,
+        display,
+      );
       this.gameMap = map;
       this.player = loadedPlayer;
+      this.currentFloor = floor;
     } else {
       this.generateFloor();
     }
@@ -189,12 +193,14 @@ export class GameScreen extends BaseScreen {
   private static load(
     serializedGameMap: string,
     display: Display,
-  ): [GameMap, Actor] {
+  ): [GameMap, Actor, number] {
     const parsedMap = JSON.parse(serializedGameMap) as SerializedGameMap;
     const playerEntity = parsedMap.entities.find((e) => e.name === 'Player');
     if (!playerEntity) throw new Error('shit broke');
     const player = spawnPlayer(playerEntity.x, playerEntity.y);
     player.fighter.hp = playerEntity.fighter?.hp || player.fighter.hp;
+    player.level.currentLevel = playerEntity.level?.currentLevel;
+    player.level.currentXp = playerEntity.level?.currentXp;
     window.engine.player = player;
 
     const map = new GameMap(parsedMap.width, parsedMap.height, display, [
@@ -254,16 +260,18 @@ export class GameScreen extends BaseScreen {
         spawnFireballScroll(map, e.x, e.y);
       }
     }
-    return [map, player];
+    return [map, player, parsedMap.currentFloor];
   }
 
   private toObject(): SerializedGameMap {
     return {
+      currentFloor: this.currentFloor,
       width: this.gameMap.width,
       height: this.gameMap.height,
       tiles: this.gameMap.tiles,
       entities: this.gameMap.entities.map((e) => {
         let fighter = null;
+        let level = null;
         let aiType = null;
         let inventory = null;
         let confusedTurnsRemaining = 0;
@@ -271,7 +279,21 @@ export class GameScreen extends BaseScreen {
         if (e instanceof Actor) {
           const actor = e as Actor;
           const { maxHp, _hp: hp, defense, power } = actor.fighter;
+          const {
+            currentXp,
+            currentLevel,
+            levelUpBase,
+            levelUpFactor,
+            xpGiven,
+          } = actor.level;
           fighter = { maxHp, hp, defense, power };
+          level = {
+            currentXp,
+            currentLevel,
+            levelUpBase,
+            levelUpFactor,
+            xpGiven,
+          };
           if (actor.ai) {
             aiType = actor.ai instanceof HostileEnemy ? 'hostile' : 'confused';
             confusedTurnsRemaining =
@@ -294,6 +316,7 @@ export class GameScreen extends BaseScreen {
           bg: e.bg,
           name: e.name,
           fighter,
+          level,
           aiType,
           confusedTurnsRemaining,
           inventory,
@@ -304,6 +327,7 @@ export class GameScreen extends BaseScreen {
 }
 
 type SerializedGameMap = {
+  currentFloor: number;
   width: number;
   height: number;
   tiles: Tile[][];
@@ -318,9 +342,18 @@ type SerializedEntity = {
   bg: string;
   name: string;
   fighter: SerializedFighter | null;
+  level: SerializedLevel | null;
   aiType: string | null;
   confusedTurnsRemaining: number;
   inventory: SerializedItem[] | null;
+};
+
+type SerializedLevel = {
+  levelUpBase: number;
+  xpGiven: number;
+  currentLevel: number;
+  currentXp: number;
+  levelUpFactor: number;
 };
 
 type SerializedFighter = {
