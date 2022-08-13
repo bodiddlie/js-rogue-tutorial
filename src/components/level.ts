@@ -53,7 +53,7 @@ export class Level extends BaseComponent {
   increasePower(amount: number = 1) {
     const actor = this.parent as Actor;
     if (!actor) return;
-    actor.fighter.power += amount;
+    actor.fighter.basePower += amount;
 
     window.messageLog.addMessage('You feel stronger!');
 
@@ -63,7 +63,7 @@ export class Level extends BaseComponent {
   increaseDefense(amount: number = 1) {
     const actor = this.parent as Actor;
     if (!actor) return;
-    actor.fighter.defense += amount;
+    actor.fighter.baseDefense += amount;
 
     window.messageLog.addMessage('Your movements are getting swifter!');
 

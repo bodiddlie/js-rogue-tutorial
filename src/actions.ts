@@ -50,7 +50,7 @@ export class ItemAction extends Action {
   }
 
   perform(entity: Entity, gameMap: GameMap) {
-    this.item?.consumable.activate(this, entity, gameMap);
+    this.item?.consumable?.activate(this, entity, gameMap);
   }
 }
 
@@ -164,5 +164,21 @@ export class DropItem extends ItemAction {
     const dropper = entity as Actor;
     if (!dropper || !this.item) return;
     dropper.inventory.drop(this.item, gameMap);
+
+    if (dropper.equipment.itemIsEquipped(this.item)) {
+      dropper.equipment.toggleEquip(this.item);
+    }
+  }
+}
+
+export class EquipAction extends Action {
+  constructor(public item: Item) {
+    super();
+  }
+
+  perform(entity: Entity, _gameMap: GameMap) {
+    const actor = entity as Actor;
+    if (!actor) return;
+    actor.equipment.toggleEquip(this.item);
   }
 }

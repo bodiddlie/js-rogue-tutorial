@@ -44,11 +44,17 @@ const ITEM_CHANCES: WeightedChoices[] = [
   },
   {
     floor: 4,
-    weights: [{ value: 'spawnLightningScroll', weight: 25 }],
+    weights: [
+      { value: 'spawnLightningScroll', weight: 25 },
+      { value: 'spawnSword', weight: 5 },
+    ],
   },
   {
     floor: 6,
-    weights: [{ value: 'spawnFireballScroll', weight: 25 }],
+    weights: [
+      { value: 'spawnFireballScroll', weight: 25 },
+      { value: 'spawnChainMail', weight: 15 },
+    ],
   },
 ];
 

@@ -5,12 +5,16 @@ import { generateDungeon } from '../procgen';
 import {
   Actor,
   Item,
+  spawnChainMail,
   spawnConfusionScroll,
+  spawnDagger,
   spawnFireballScroll,
   spawnHealthPotion,
+  spawnLeatherArmor,
   spawnLightningScroll,
   spawnOrc,
   spawnPlayer,
+  spawnSword,
   spawnTroll,
 } from '../entity';
 import {
@@ -59,6 +63,17 @@ export class GameScreen extends BaseScreen {
       this.currentFloor = floor;
     } else {
       this.generateFloor();
+      const dagger = spawnDagger(this.gameMap, 0, 0);
+      dagger.parent = this.player.inventory;
+      this.player.inventory.items.push(dagger);
+      this.player.equipment.toggleEquip(dagger, false);
+      this.gameMap.removeEntity(dagger);
+
+      const leatherArmor = spawnLeatherArmor(this.gameMap, 0, 0);
+      leatherArmor.parent = this.player.inventory;
+      this.player.inventory.items.push(leatherArmor);
+      this.player.equipment.toggleEquip(leatherArmor, false);
+      this.gameMap.removeEntity(leatherArmor);
     }
 
     this.inputHandler = new GameInputHandler();
@@ -151,12 +166,6 @@ export class GameScreen extends BaseScreen {
         ),
       );
     }
-    if (this.inputHandler.inputState === InputState.UseInventory) {
-      this.renderInventory('Select an item to use');
-    }
-    if (this.inputHandler.inputState === InputState.DropInventory) {
-      this.renderInventory('Select an item to drop');
-    }
     if (this.inputHandler.inputState === InputState.Target) {
       const [x, y] = this.inputHandler.mousePosition;
       this.display.drawOver(x, y, null, '#000', '#fff');
@@ -198,8 +207,12 @@ export class GameScreen extends BaseScreen {
     if (!playerEntity) throw new Error('shit broke');
     const player = spawnPlayer(playerEntity.x, playerEntity.y);
     player.fighter.hp = playerEntity.fighter?.hp || player.fighter.hp;
-    player.level.currentLevel = playerEntity.level?.currentLevel;
-    player.level.currentXp = playerEntity.level?.currentXp;
+    player.level.currentLevel = playerEntity.level
+      ? playerEntity.level.currentLevel
+      : 0;
+    player.level.currentXp = playerEntity.level
+      ? playerEntity.level.currentXp
+      : 0;
     window.engine.player = player;
 
     const map = new GameMap(parsedMap.width, parsedMap.height, display, [
@@ -225,6 +238,22 @@ export class GameScreen extends BaseScreen {
         }
         case 'Fireball Scroll': {
           item = spawnFireballScroll(map, 0, 0);
+          break;
+        }
+        case 'Dagger': {
+          item = spawnDagger(map, 0, 0);
+          break;
+        }
+        case 'Sword': {
+          item = spawnSword(map, 0, 0);
+          break;
+        }
+        case 'Leather Armor': {
+          item = spawnLeatherArmor(map, 0, 0);
+          break;
+        }
+        case 'Chain Mail': {
+          item = spawnChainMail(map, 0, 0);
           break;
         }
       }
@@ -257,6 +286,14 @@ export class GameScreen extends BaseScreen {
         spawnConfusionScroll(map, e.x, e.y);
       } else if (e.name === 'Fireball Scroll') {
         spawnFireballScroll(map, e.x, e.y);
+      } else if (e.name === 'Dagger') {
+        spawnDagger(map, e.x, e.y);
+      } else if (e.name === 'Sword') {
+        spawnSword(map, e.x, e.y);
+      } else if (e.name === 'Leather Armor') {
+        spawnLeatherArmor(map, e.x, e.y);
+      } else if (e.name === 'Chain Mail') {
+        spawnChainMail(map, e.x, e.y);
       }
     }
     return [map, player, parsedMap.currentFloor];
