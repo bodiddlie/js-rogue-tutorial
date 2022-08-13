@@ -173,25 +173,6 @@ export class GameScreen extends BaseScreen {
     this.inputHandler.onRender(this.display);
   }
 
-  renderInventory(title: string) {
-    const itemCount = this.player.inventory.items.length;
-    const height = itemCount + 2 <= 3 ? 3 : itemCount + 2;
-    const width = title.length + 4;
-    const x = this.player.x <= 30 ? 40 : 0;
-    const y = 0;
-
-    renderFrameWithTitle(x, y, width, height, title);
-
-    if (itemCount > 0) {
-      this.player.inventory.items.forEach((i, index) => {
-        const key = String.fromCharCode('a'.charCodeAt(0) + index);
-        this.display.drawText(x + 1, y + index + 1, `(${key}) ${i.name}`);
-      });
-    } else {
-      this.display.drawText(x + 1, y + 1, '(Empty)');
-    }
-  }
-
   private saveGame() {
     try {
       localStorage.setItem('roguesave', JSON.stringify(this.toObject()));
